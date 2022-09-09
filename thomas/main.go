@@ -1,24 +1,41 @@
 package main
 
 import (
+	"fmt"
+	"github.com/BabySid/gobase"
 	"github.com/urfave/cli/v2"
 	"io"
 	"os"
 	"path/filepath"
 	"sodor/base"
+	"sodor/thomas/task"
 	"sort"
+	"syscall"
 )
 
 // todo add signal handler
 func main() {
+	ss := gobase.NewSignalSet()
+	ss.Register(syscall.SIGTERM, exit)
+
 	app := NewApp()
 
-	app.Action = func(ctx *cli.Context) error {
-		if ctx.String("addr") == "self" {
-			return cli.Exit("run failed", 1)
-		}
-		return nil
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
+}
+
+func NewApp() *cli.App {
+	app := cli.NewApp()
+	app.EnableBashCompletion = true
+	app.UseShortOptionHandling = true
+	app.Name = filepath.Base(os.Args[0])
+	app.Version = "1.0"
+	app.Usage = "thomas: a famous little tank engine run job from fat_controller"
+
+	app.Action = runApp
 
 	app.Flags = []cli.Flag{
 		grpcPort,
@@ -26,8 +43,7 @@ func main() {
 		fatControllerAddr,
 	}
 	app.Commands = []*cli.Command{
-		supervisorCommand,
-		httpCommand,
+		task.ShellCommand,
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
@@ -42,19 +58,21 @@ func main() {
 		})
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
-		panic(err)
-	}
+	return app
 }
 
-func NewApp() *cli.App {
-	app := cli.NewApp()
-	app.EnableBashCompletion = true
-	app.UseShortOptionHandling = true
-	app.Name = filepath.Base(os.Args[0])
-	app.Version = "1.0"
-	app.Usage = "thomas: a famous little tank engine run task from fat_controller"
+func runApp(ctx *cli.Context) error {
+	if ctx.NumFlags() == 0 {
+		cli.ShowAppHelpAndExit(ctx, 1)
+	}
 
-	return app
+	if ctx.String("addr") == "self" {
+		return cli.Exit("run failed", 1)
+	}
+
+	return nil
+}
+
+func exit(sig os.Signal) {
+	fmt.Printf("recv %s signal to exit\n", sig)
 }
