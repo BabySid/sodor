@@ -9,7 +9,7 @@ import (
 	"sort"
 )
 
-// todo initSignals
+// todo add signal handler
 func main() {
 	app := NewApp()
 
