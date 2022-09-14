@@ -19,7 +19,7 @@ var (
 	AppHelpTemplate = `NAME:
    {{.App.Name}} - {{.App.Usage}}
 
-   Copyright 2018-2022 The BabySid Authors
+   Copyright 2022 The BabySid Authors
 
 USAGE:
    {{.App.HelpName}} [options]{{if .App.Commands}} [command] [command options]{{end}} {{if .App.ArgsUsage}}{{.App.ArgsUsage}}{{else}}[arguments...]{{end}}

@@ -3,7 +3,7 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 
 # Some Expected Usage
 * fat_ctrl
-  * ./fat_ctrl --port xxxx
+  * ./fat_ctrl --port xxxx --metastore mysql://user:pass@tcp(1.2.3.4:3306)/charset=utf8
 * thomas
   * ./thomas --grpc.port xxxx 
   * run job
