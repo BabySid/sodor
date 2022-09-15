@@ -18,6 +18,7 @@ import (
 
 var (
 	AppVersion string
+	AppName    = filepath.Base(os.Args[0])
 )
 
 func main() {
@@ -37,7 +38,7 @@ func NewApp() *cli.App {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
 	app.UseShortOptionHandling = true
-	app.Name = filepath.Base(os.Args[0])
+	app.Name = AppName
 	app.Version = AppVersion
 	app.Usage = "fat_ctrl is responsible for ensuring that all trains arrive at the station on time and play their due role"
 
@@ -93,5 +94,6 @@ func runApp(ctx *cli.Context) error {
 }
 
 func exit(sig os.Signal) {
-	log.Infof("%s exit by recving the signal %v", os.Args[0], sig)
+	log.Infof("%s exit by recving the signal %v", AppName, sig)
+	os.Exit(0)
 }
