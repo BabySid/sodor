@@ -4,9 +4,8 @@ go 1.17
 
 require (
 	github.com/BabySid/gobase v0.0.0-20220909073940-956b7a4bad57
-	github.com/BabySid/gorpc v0.0.0-20220914080615-20bb0baf5105
+	github.com/BabySid/gorpc v0.0.0-20220915104742-0333305e6494
 	github.com/BabySid/proto v0.0.0-20220915102947-68ef65479355
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.10.1
 )
