@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/BabySid/gobase v0.0.0-20220909073940-956b7a4bad57
-	github.com/BabySid/gorpc v0.0.0-20220915104742-0333305e6494
-	github.com/BabySid/proto v0.0.0-20220915102947-68ef65479355
+	github.com/BabySid/gorpc v0.0.0-20220916031435-935b7e76f8ad
+	github.com/BabySid/proto v0.0.0-20220916101214-b08f563098be
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.10.1
 )
@@ -26,6 +26,7 @@ require (
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.1.2 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible // indirect

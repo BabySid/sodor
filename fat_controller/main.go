@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/gorpc"
+	"github.com/BabySid/gorpc/http/httpcfg"
 	logOption "github.com/BabySid/gorpc/log"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -74,7 +75,7 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
-	s := gorpc.NewServer()
+	s := gorpc.NewServer(httpcfg.ServerOption{PDecoder: httpcfg.ProtoBufParamsDecoder})
 	s.RegisterJsonRPC("rpc", &jsonrpc.Service{})
 
 	var rotator *logOption.Rotator
