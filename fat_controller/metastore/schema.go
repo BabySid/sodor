@@ -29,7 +29,7 @@ type Task struct {
 	Host            string `gorm:"not null;default:'';size:64"`
 	SchedulerMode   int    `gorm:"not null;default:0"`
 	SchedulerCTSpec string `gorm:"not null;default:'';size:32"`
-	Script          string `grom:"not null;default:'';type:mediumtext"`
+	Script          string `gorm:"not null;default:'';type:mediumtext"`
 }
 
 type TaskRelation struct {
@@ -58,7 +58,7 @@ type Thomas struct {
 	Proto             string `gorm:"size:16;not null"`
 	Host              string `gorm:"size:32;not null"`
 	Port              int    `gorm:"not null"`
-	PID               int    `gorm:"not null"`
+	PID               int    `gorm:"not null;column:pid"`
 	Tags              string `gorm:"not null;default:'';size:64"`
 	LastStartTime     int64  `gorm:"not null"`
 	LastHeartbeatTime int64  `gorm:"not null"`
