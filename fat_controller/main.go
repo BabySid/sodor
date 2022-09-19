@@ -78,7 +78,11 @@ func runApp(ctx *cli.Context) error {
 	}
 
 	if ctx.Bool(initMetaStore.Name) {
-		return initializeMetaStore(ctx)
+		err := initializeMetaStore(ctx)
+		if err != nil {
+			log.Warn(err)
+		}
+		return nil
 	}
 
 	s := gorpc.NewServer(httpcfg.ServerOption{PDecoder: httpcfg.ProtoBufParamsDecoder})
