@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sodor/base"
 	"sodor/fat_controller/jsonrpc"
+	"sodor/fat_controller/metastore"
 	"sort"
 	"syscall"
 )
@@ -48,6 +49,7 @@ func NewApp() *cli.App {
 	app.Flags = []cli.Flag{
 		listenAddr,
 		metaStore,
+		initMetaStore,
 		logLevel,
 		logPath,
 		logMaxAge,
@@ -75,8 +77,12 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
+	if ctx.Bool(initMetaStore.Name) {
+		return initializeMetaStore(ctx)
+	}
+
 	s := gorpc.NewServer(httpcfg.ServerOption{PDecoder: httpcfg.ProtoBufParamsDecoder})
-	s.RegisterJsonRPC("rpc", &jsonrpc.Service{})
+	_ = s.RegisterJsonRPC("rpc", &jsonrpc.Service{})
 
 	var rotator *logOption.Rotator
 	if !ctx.Bool(debugMode.Name) {
@@ -97,4 +103,8 @@ func runApp(ctx *cli.Context) error {
 func exit(sig os.Signal) {
 	log.Infof("%s exit by recving the signal %v", AppName, sig)
 	os.Exit(0)
+}
+
+func initializeMetaStore(ctx *cli.Context) error {
+	return metastore.GlobalMetaStore.InitOnce(ctx.String(metaStore.Name))
 }
