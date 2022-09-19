@@ -42,8 +42,8 @@ type Alert struct {
 
 type TaskInstance struct {
 	gorm.Model
-	JobID      int64  `gorm:"not null"`
-	InstanceID int64  `gorm:"not null"`
+	JobID      int64  `gorm:"not null;uniqueIndex:uniq_task"`
+	InstanceID int64  `gorm:"not null;uniqueIndex:uniq_task"`
 	StartTS    int64  `gorm:"not null;default:0"`
 	StopTS     int64  `gorm:"not null;default:0"`
 	PID        int64  `gorm:"not null;default:0"`
