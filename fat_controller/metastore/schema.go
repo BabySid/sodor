@@ -2,6 +2,8 @@ package metastore
 
 import "gorm.io/gorm"
 
+// This is the data structure of the storage layer
+
 var (
 	totalTable []interface{}
 )
@@ -29,13 +31,13 @@ type Job struct {
 
 type Task struct {
 	gorm.Model
-	JobID           int64  `gorm:"not null;uniqueIndex:uniq_task"`
-	Name            string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
-	RunningHosts    string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
-	SchedulerMode   int    `gorm:"not null;default:0"`
-	SchedulerCTSpec string `gorm:"not null;default:'';size:32"`
-	Script          string `gorm:"not null;default:'';type:mediumtext"`
-	RunTimeout      int    `gorm:"not null;default:0"` // seconds
+	JobID         int64  `gorm:"not null;uniqueIndex:uniq_task"`
+	Name          string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
+	RunningHosts  string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
+	SchedulerMode int    `gorm:"not null;default:0"`
+	RoutineSpec   string `gorm:"not null;default:'';size:128"`
+	Script        string `gorm:"not null;default:'';type:mediumtext"`
+	RunTimeout    int    `gorm:"not null;default:0"` // seconds
 }
 
 type TaskRelation struct {

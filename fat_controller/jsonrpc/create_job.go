@@ -5,7 +5,7 @@ import (
 	"github.com/BabySid/proto/sodor"
 )
 
-func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.Reply, error) {
+func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, error) {
 	ctx.ToLog("CreateJob: %+v", params)
-	return nil, nil
+	return &sodor.JobReply{Id: 1}, nil
 }

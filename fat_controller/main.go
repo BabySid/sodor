@@ -77,8 +77,13 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
+	err := initComponent(ctx)
+	if err != nil {
+		return err
+	}
+
 	if ctx.Bool(initMetaStore.Name) {
-		initializeMetaStore(ctx)
+		initializeMetaStore()
 		return nil
 	}
 
@@ -106,16 +111,19 @@ func exit(sig os.Signal) {
 	os.Exit(0)
 }
 
-func initializeMetaStore(ctx *cli.Context) {
-	err := metastore.GlobalMetaStore.InitOnce(ctx.String(metaStore.Name))
-	if err != nil {
-		log.Warnf("init meta store failed. err=%s", err)
-		return
-	}
-
-	err = metastore.GlobalMetaStore.AutoMigrate()
+func initializeMetaStore() {
+	err := metastore.GlobalMetaStore.AutoMigrate()
 	if err != nil {
 		log.Warnf("init meta automigrate failed. err=%s", err)
 		return
 	}
+}
+
+func initComponent(ctx *cli.Context) error {
+	err := metastore.GlobalMetaStore.InitOnce(ctx.String(metaStore.Name))
+	if err != nil {
+		log.Warnf("init meta store failed. err=%s", err)
+		return err
+	}
+	return nil
 }

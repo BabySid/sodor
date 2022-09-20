@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/BabySid/gobase v0.0.0-20220909073940-956b7a4bad57
 	github.com/BabySid/gorpc v0.0.0-20220916031435-935b7e76f8ad
-	github.com/BabySid/proto v0.0.0-20220916101214-b08f563098be
+	github.com/BabySid/proto v0.0.0-20220920084407-3c0d4754274a
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.10.1
 	gorm.io/driver/mysql v1.3.6

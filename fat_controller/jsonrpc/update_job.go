@@ -5,6 +5,6 @@ import (
 	"github.com/BabySid/proto/sodor"
 )
 
-func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.Reply, error) {
+func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, error) {
 	return nil, nil
 }

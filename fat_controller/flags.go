@@ -37,7 +37,7 @@ var (
 		Name:        "log.path",
 		Usage:       "Set the path for writing the log",
 		DefaultText: ".",
-		Value:       ".",
+		Value:       "./",
 	}
 
 	logMaxAge = &cli.IntFlag{
