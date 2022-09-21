@@ -6,42 +6,42 @@ import (
 )
 
 func (ms *metaStore) InsertJob(job *sodor.Job) error {
-	mJob := Job{
-		Name:         job.Name,
-		AlertRule:    "",
-		AlertGroupID: 0,
-	}
-
-	mTasks := make([]Task, 0)
-	for _, t := range job.GetTasks() {
-		var task Task
-		task.Name = t.Name
-		if t.SchedulerMode == sodor.SchedulerMode_SM_None {
-			task.SchedulerMode = int(sodor.SchedulerMode_SM_None.Number())
-		} else if t.SchedulerMode == sodor.SchedulerMode_SM_Crontab {
-			task.SchedulerMode = int(sodor.SchedulerMode_SM_Crontab.Number())
-			task.RoutineSpec = t.RoutineSpec.CtSpec
+	err := ms.db.Transaction(func(tx *gorm.DB) error {
+		mJob := Job{
+			Name:         job.Name,
+			AlertRule:    "",
+			AlertGroupID: 0,
 		}
-
-		task.Script = t.Script
-		task.RunningHosts = t.RunningHosts
-		task.RunTimeout = int(t.RunningTimeout)
-
-		mTasks = append(mTasks, task)
-	}
-
-	return ms.db.Transaction(func(tx *gorm.DB) error {
 		rst := tx.Create(&mJob)
 		if rst.Error != nil {
 			return rst.Error
 		}
 
+		job.Id = int64(mJob.ID)
+
+		mTasks := make([]Task, 0)
+		for _, t := range job.GetTasks() {
+			var task Task
+			task.JobID = job.Id
+			task.Name = t.Name
+			if t.SchedulerMode == sodor.SchedulerMode_SM_None {
+				task.SchedulerMode = int(sodor.SchedulerMode_SM_None.Number())
+			} else if t.SchedulerMode == sodor.SchedulerMode_SM_Crontab {
+				task.SchedulerMode = int(sodor.SchedulerMode_SM_Crontab.Number())
+				task.RoutineSpec = t.RoutineSpec.CtSpec
+			}
+
+			task.Script = t.Script
+			task.RunningHosts = t.RunningHosts
+			task.RunTimeout = int(t.RunningTimeout)
+
+			mTasks = append(mTasks, task)
+		}
 		rst = tx.Create(&mTasks)
 		if rst.Error != nil {
 			return rst.Error
 		}
 
-		job.Id = int64(mJob.ID)
 		taskID := make(map[string]int64)
 		for i, t := range mTasks {
 			job.Tasks[i].JobId = job.Id
@@ -64,6 +64,8 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 		rst = tx.Create(&mRels)
 		return nil
 	})
+
+	return err
 }
 
 func (ms *metaStore) UpdateJob() error {

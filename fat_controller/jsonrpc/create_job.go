@@ -13,17 +13,17 @@ func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 	}
 
 	if len(params.Name) >= metastore.MaxNameLen {
-		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
-			fmt.Sprintf("params.name is long than %d", metastore.MaxNameLen), nil)
+		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams, httpapi.SysCodeMap[httpapi.InvalidParams],
+			fmt.Sprintf("params.name is long than %d", metastore.MaxNameLen))
 	}
 
 	if err := checkTaskValid(params); err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams, err.Error(), nil)
+		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams, httpapi.SysCodeMap[httpapi.InvalidParams], err)
 	}
 
 	err := metastore.GetInstance().InsertJob(params)
 	if err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, err.Error(), nil)
+		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
 	}
 
 	ctx.ToLog("CreateJob Done: %+v", params)
