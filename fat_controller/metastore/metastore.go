@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"strings"
+	"sync"
 )
 
 func parseDSN(uri string) (string, error) {
@@ -19,9 +20,24 @@ type metaStore struct {
 	db *gorm.DB
 }
 
-var GlobalMetaStore metaStore
+var (
+	once      sync.Once
+	singleton *metaStore
+	URI       string
+)
 
-func (ms *metaStore) InitOnce(uri string) error {
+func GetInstance() *metaStore {
+	once.Do(func() {
+		singleton = &metaStore{}
+		err := singleton.initOnce(URI)
+		if err != nil {
+			log.Fatalf("metastore init failed. err=%s", err)
+		}
+	})
+	return singleton
+}
+
+func (ms *metaStore) initOnce(uri string) error {
 	if ms.db != nil {
 		return nil
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/urfave/cli/v2"
 	"sodor/base"
+	"sodor/fat_controller/metastore"
 )
 
 var (
@@ -14,9 +15,10 @@ var (
 	}
 
 	metaStore = &cli.StringFlag{
-		Name:     "metastore.addr",
-		Usage:    "Set the metastore address",
-		Required: true,
+		Name:        "metastore.addr",
+		Usage:       "Set the metastore address",
+		Required:    true,
+		Destination: &metastore.URI,
 	}
 
 	initMetaStore = &cli.BoolFlag{
