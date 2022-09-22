@@ -11,6 +11,14 @@ import (
 )
 
 func checkTaskValid(job *sodor.Job) error {
+	if len(job.Name) >= metastore.MaxNameLen {
+		return fmt.Errorf("job.name is long than %d", metastore.MaxNameLen)
+	}
+
+	if len(strings.TrimSpace(job.Name)) == 0 {
+		return errors.New("job.name is empty")
+	}
+
 	if len(job.GetTasks()) == 0 {
 		return errors.New("empty tasks")
 	}
