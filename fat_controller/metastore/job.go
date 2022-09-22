@@ -56,7 +56,6 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 			rel.JobID = int64(mJob.ID)
 			rel.FromTaskID = taskID[r.FromTask]
 			rel.ToTaskID = taskID[r.ToTask]
-			rel.ConditionType = int(r.ConditionType)
 
 			mRels = append(mRels, rel)
 		}

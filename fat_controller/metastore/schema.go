@@ -42,10 +42,9 @@ type Task struct {
 
 type TaskRelation struct {
 	gorm.Model
-	JobID         int64 `gorm:"not null;uniqueIndex:uniq_relation"`
-	FromTaskID    int64 `gorm:"not null"`
-	ToTaskID      int64 `gorm:"not null"`
-	ConditionType int   `gorm:"not null;default:0"`
+	JobID      int64 `gorm:"not null;uniqueIndex:uniq_relation"`
+	FromTaskID int64 `gorm:"not null"`
+	ToTaskID   int64 `gorm:"not null"`
 }
 
 type AlertGroup struct {
