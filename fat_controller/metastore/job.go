@@ -19,7 +19,7 @@ func (ms *metaStore) JobExist(job *sodor.Job) (bool, error) {
 	}
 
 	var jobs []apiJob
-	rs := ms.db.Where(&j).Find(&jobs)
+	rs := ms.db.Model(&Job{}).Where(&j).Find(&jobs)
 	if rs.Error != nil {
 		return false, rs.Error
 	}
