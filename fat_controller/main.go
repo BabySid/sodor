@@ -88,7 +88,7 @@ func runApp(ctx *cli.Context) error {
 		return nil
 	}
 
-	server = gorpc.NewServer(httpcfg.ServerOption{PDecoder: httpcfg.ProtoBufParamsDecoder})
+	server = gorpc.NewServer(httpcfg.ServerOption{Codec: httpcfg.ProtobufCodec})
 	_ = server.RegisterJsonRPC("rpc", &jsonrpc.Service{})
 
 	var rotator *logOption.Rotator

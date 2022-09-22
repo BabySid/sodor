@@ -33,5 +33,5 @@ func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 	}
 
 	ctx.ToLog("UpdateJob Done: %+v", params)
-	return nil, nil
+	return &sodor.JobReply{Id: params.Id}, nil
 }
