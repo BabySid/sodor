@@ -35,7 +35,7 @@ func toTask(in *sodor.Task, jobID int64, out *Task) error {
 	out.JobID = jobID
 	out.Name = in.Name
 
-	out.SchedulerMode = sodor.SchedulerMode_SM_None.String()
+	out.SchedulerMode = in.SchedulerMode.String()
 	if in.RoutineSpec != nil {
 		temp, err := protojson.Marshal(in.RoutineSpec)
 		if err != nil {
@@ -45,11 +45,14 @@ func toTask(in *sodor.Task, jobID int64, out *Task) error {
 	}
 
 	out.Script = in.Script
-	jsonBytes, err := json.Marshal(in.RunningHosts)
-	if err != nil {
-		return err
+	if in.RunningHosts != nil {
+		jsonBytes, err := json.Marshal(in.RunningHosts)
+		if err != nil {
+			return err
+		}
+		out.RunningHosts = string(jsonBytes)
 	}
-	out.RunningHosts = string(jsonBytes)
+
 	out.RunTimeout = int(in.RunningTimeout)
 
 	return nil
@@ -59,17 +62,20 @@ func fromTask(in *Task, out *sodor.Task) error {
 	out.Id = int64(in.ID)
 	out.JobId = in.JobID
 	out.Name = in.Name
-	err := json.Unmarshal([]byte(in.RunningHosts), &out.RunningHosts)
-	if err != nil {
-		return err
+	if in.RunningHosts != "" {
+		err := json.Unmarshal([]byte(in.RunningHosts), &out.RunningHosts)
+		if err != nil {
+			return err
+		}
+		out.RunningTimeout = int32(in.RunTimeout)
 	}
-	out.RunningTimeout = int32(in.RunTimeout)
+
 	out.Script = in.Script
 	out.SchedulerMode = sodor.SchedulerMode(sodor.SchedulerMode_value[in.SchedulerMode])
 
 	if out.SchedulerMode == sodor.SchedulerMode_SM_Crontab {
 		var spec sodor.RoutineSpec
-		err = json.Unmarshal([]byte(in.RoutineSpec), &spec)
+		err := json.Unmarshal([]byte(in.RoutineSpec), &spec)
 		if err != nil {
 			return err
 		}
