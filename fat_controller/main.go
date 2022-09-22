@@ -21,6 +21,7 @@ import (
 var (
 	AppVersion string
 	AppName    = filepath.Base(os.Args[0])
+	server     *gorpc.Server
 )
 
 func main() {
@@ -87,8 +88,8 @@ func runApp(ctx *cli.Context) error {
 		return nil
 	}
 
-	s := gorpc.NewServer(httpcfg.ServerOption{PDecoder: httpcfg.ProtoBufParamsDecoder})
-	_ = s.RegisterJsonRPC("rpc", &jsonrpc.Service{})
+	server = gorpc.NewServer(httpcfg.ServerOption{PDecoder: httpcfg.ProtoBufParamsDecoder})
+	_ = server.RegisterJsonRPC("rpc", &jsonrpc.Service{})
 
 	var rotator *logOption.Rotator
 	if !ctx.Bool(debugMode.Name) {
@@ -98,7 +99,7 @@ func runApp(ctx *cli.Context) error {
 		}
 	}
 
-	return s.Run(gorpc.ServerOption{
+	return server.Run(gorpc.ServerOption{
 		Addr:        ctx.String(listenAddr.Name),
 		ClusterName: "fat_ctrl",
 		Rotator:     rotator,
@@ -108,6 +109,7 @@ func runApp(ctx *cli.Context) error {
 
 func exit(sig os.Signal) {
 	log.Infof("%s exit by recving the signal %v", AppName, sig)
+	_ = server.Stop()
 	os.Exit(0)
 }
 
