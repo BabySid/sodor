@@ -139,7 +139,9 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 		//tx.Delete(&tasksToDel)
 
 		// Because the relational does not have other associated attributes, it can be deleted directly
-		tx.Where("job_id = ?", job.Id).Delete(&TaskRelation{})
+		if rs := tx.Where("job_id = ?", job.Id).Delete(&TaskRelation{}); rs.Error != nil {
+			return rs.Error
+		}
 
 		mRels := make([]TaskRelation, 0)
 		for _, r := range job.GetRelations() {
@@ -163,7 +165,25 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 func (ms *metaStore) DeleteJob(jID *sodor.Job) error {
 	gobase.True(jID.Id > 0)
 
-	return nil
+	err := ms.db.Transaction(func(tx *gorm.DB) error {
+		var job Job
+		job.ID = uint(jID.Id)
+
+		if rs := tx.Delete(&job); rs.Error != nil {
+			return rs.Error
+		}
+
+		if rs := tx.Where("job_id = ?", job.ID).Delete(&Task{}); rs.Error != nil {
+			return rs.Error
+		}
+		
+		if rs := tx.Where("job_id = ?", job.ID).Delete(&TaskRelation{}); rs.Error != nil {
+			return rs.Error
+		}
+		return nil
+	})
+
+	return err
 }
 
 // SelectJob returns Job & Tasks & Relations by job.ID
@@ -216,12 +236,6 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 	return nil
 }
 
-func (ms *metaStore) SelectJobInstance(jID *sodor.Job) error {
-	gobase.True(jID.Id > 0)
-
-	return nil
-}
-
 func (ms *metaStore) ListJobs() (*sodor.Jobs, error) {
 	var jobs []Job
 	if rst := ms.db.Find(&jobs); rst.Error != nil {
@@ -241,4 +255,10 @@ func (ms *metaStore) ListJobs() (*sodor.Jobs, error) {
 	}
 
 	return &sJobs, nil
+}
+
+func (ms *metaStore) SelectJobInstance(jID *sodor.Job) error {
+	gobase.True(jID.Id > 0)
+
+	return nil
 }

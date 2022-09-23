@@ -62,7 +62,7 @@ func toTask(in *sodor.Task, jobID int32, out *Task) error {
 
 func fromTask(in *Task, out *sodor.Task) error {
 	out.Id = int32(int64(in.ID))
-	out.JobId = int32(in.JobID)
+	out.JobId = in.JobID
 	out.Name = in.Name
 	if in.RunningHosts != "" {
 		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.RunningHosts), &out.RunningHosts)

@@ -28,9 +28,17 @@ func GetInstance() *scheduler {
 }
 
 func (s *scheduler) Start() error {
+	s.routine.Start()
 	return nil
 }
 
 func (s *scheduler) initOnce() error {
+	s.routine = cron.New(cron.WithSeconds(), cron.WithLogger(cron.PrintfLogger(&cronLog{})))
 	return nil
+}
+
+type cronLog struct{}
+
+func (l *cronLog) Printf(msg string, v ...interface{}) {
+	log.Infof(msg, v...)
 }
