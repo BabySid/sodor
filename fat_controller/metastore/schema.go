@@ -71,6 +71,7 @@ type JobInstance struct {
 	JobID    int32  `gorm:"not null"`
 	StartTS  int32  `gorm:"not null;default:0"`
 	StopTS   int32  `gorm:"not null;default:0"`
+	Progress string `gorm:"not null;default:''"` // json
 	ExitCode int32  `gorm:"not null;default:0"`
 	ExitMsg  string `gorm:"not null;default:''"`
 }
