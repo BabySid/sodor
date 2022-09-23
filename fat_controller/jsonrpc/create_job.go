@@ -8,12 +8,7 @@ import (
 )
 
 func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, *httpapi.JsonRpcError) {
-	if params.Id != 0 {
-		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
-			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job.id must not be set"))
-	}
-
-	if err := checkTaskValid(params); err != nil {
+	if err := checkTaskValid(params, true); err != nil {
 		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams, httpapi.SysCodeMap[httpapi.InvalidParams], err)
 	}
 

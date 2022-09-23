@@ -10,7 +10,14 @@ import (
 	"strings"
 )
 
-func checkTaskValid(job *sodor.Job) error {
+func checkTaskValid(job *sodor.Job, create bool) error {
+	if create && job.Id != 0 {
+		return errors.New("job.id must not be set")
+	}
+	if !create && job.Id == 0 {
+		return errors.New("job.id must be set")
+	}
+
 	if len(job.Name) >= metastore.MaxNameLen {
 		return fmt.Errorf("job.name is long than %d", metastore.MaxNameLen)
 	}
@@ -26,6 +33,9 @@ func checkTaskValid(job *sodor.Job) error {
 	s := make(map[string]int)
 	taskID := 0
 	for _, task := range job.GetTasks() {
+		if create && task.Id > 0 {
+			return fmt.Errorf("task.id must not be set")
+		}
 		if len(task.Name) >= metastore.MaxNameLen {
 			return fmt.Errorf("task.name is long than %d", metastore.MaxNameLen)
 		}
@@ -36,10 +46,6 @@ func checkTaskValid(job *sodor.Job) error {
 
 		if len(strings.TrimSpace(task.Script)) == 0 {
 			return fmt.Errorf("task.script is empty")
-		}
-
-		if task.Id != 0 {
-			return fmt.Errorf("task.id cannot be set")
 		}
 
 		if task.SchedulerMode != sodor.SchedulerMode_SM_None && task.GetRoutineSpec() != nil && task.GetRoutineSpec().CtSpec == "" {
