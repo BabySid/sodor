@@ -92,7 +92,7 @@ func fromTask(in *Task, out *sodor.Task) error {
 	return nil
 }
 
-func findTaskName(ts []Task, id uint) string {
+func findTaskName(ts []*Task, id uint) string {
 	for _, t := range ts {
 		if t.ID == id {
 			return t.Name
@@ -102,7 +102,7 @@ func findTaskName(ts []Task, id uint) string {
 	return ""
 }
 
-func findTaskID(ts []Task, name string) uint {
+func findTaskID(ts []*Task, name string) uint {
 	for _, t := range ts {
 		if t.Name == name {
 			return t.ID

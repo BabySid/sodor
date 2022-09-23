@@ -184,7 +184,7 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 		return err
 	}
 
-	var tasks []Task
+	var tasks []*Task
 	if rs = ms.db.Where(&Task{JobID: int32(job.ID)}).Find(&tasks); rs.Error != nil {
 		return rs.Error
 	}
@@ -192,7 +192,7 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 	jID.Tasks = make([]*sodor.Task, len(tasks))
 	for i, t := range tasks {
 		var task sodor.Task
-		if err := fromTask(&t, &task); err != nil {
+		if err := fromTask(t, &task); err != nil {
 			return err
 		}
 		jID.Tasks[i] = &task
