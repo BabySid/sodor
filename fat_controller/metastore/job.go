@@ -221,3 +221,24 @@ func (ms *metaStore) SelectJobInstance(jID *sodor.Job) error {
 
 	return nil
 }
+
+func (ms *metaStore) ListJobs() (*sodor.Jobs, error) {
+	var jobs []Job
+	if rst := ms.db.Find(&jobs); rst.Error != nil {
+		return nil, rst.Error
+	}
+
+	var sJobs sodor.Jobs
+	sJobs.Jobs = make([]*sodor.Job, len(jobs))
+	for i, job := range jobs {
+		var sJob sodor.Job
+		err := fromJob(&job, &sJob)
+		if err != nil {
+			return nil, err
+		}
+
+		sJobs.Jobs[i] = &sJob
+	}
+
+	return &sJobs, nil
+}

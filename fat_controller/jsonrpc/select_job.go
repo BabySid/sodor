@@ -7,7 +7,7 @@ import (
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, *httpapi.JsonRpcError) {
+func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.Job, *httpapi.JsonRpcError) {
 	if params.Id == 0 {
 		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
 			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job.id must be set"))
@@ -32,5 +32,5 @@ func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 	}
 
 	ctx.ToLog("SelectJob Done: %+v", params)
-	return nil, nil
+	return &job, nil
 }
