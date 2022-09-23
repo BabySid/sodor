@@ -104,13 +104,13 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 			return rst.Error
 		}
 
-		mTasks := make([]Task, 0)
+		mTasks := make([]*Task, 0)
 		for _, t := range job.GetTasks() {
 			var task Task
 			if err = toTask(t, job.Id, &task); err != nil {
 				return err
 			}
-			mTasks = append(mTasks, task)
+			mTasks = append(mTasks, &task)
 		}
 		if rst := tx.Save(&mTasks); rst.Error != nil {
 			return rst.Error
