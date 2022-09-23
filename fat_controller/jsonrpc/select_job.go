@@ -10,17 +10,17 @@ import (
 func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.Job, *httpapi.JsonRpcError) {
 	if params.Id == 0 {
 		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
-			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job.id must be set"))
+			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job.id must be set").Error())
 	}
 
 	exist, err := metastore.GetInstance().JobExist(params)
 	if err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
+		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err.Error())
 	}
 
 	if !exist {
 		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
-			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job not exist"))
+			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job not exist").Error())
 	}
 
 	var job sodor.Job
@@ -28,7 +28,7 @@ func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 
 	err = metastore.GetInstance().SelectJob(&job)
 	if err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
+		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err.Error())
 	}
 
 	ctx.ToLog("SelectJob Done: %+v", params)
