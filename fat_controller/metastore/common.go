@@ -66,7 +66,6 @@ func fromTask(in *Task, out *sodor.Task) error {
 		if err != nil {
 			return err
 		}
-		out.RunningTimeout = int32(in.RunTimeout)
 	}
 
 	out.Script = in.Script
@@ -81,6 +80,8 @@ func fromTask(in *Task, out *sodor.Task) error {
 
 		out.RoutineSpec = &spec
 	}
+
+	out.RunningTimeout = int32(in.RunTimeout)
 
 	out.CreateAt = in.CreatedAt.Unix()
 	out.UpdateAt = in.UpdatedAt.Unix()
