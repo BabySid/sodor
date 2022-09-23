@@ -43,7 +43,7 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 			return rst.Error
 		}
 
-		job.Id = int64(mJob.ID)
+		job.Id = int32(mJob.ID)
 
 		mTasks := make([]Task, 0)
 		for _, t := range job.GetTasks() {
@@ -57,10 +57,10 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 			return rst.Error
 		}
 
-		taskID := make(map[string]int64)
+		taskID := make(map[string]int32)
 		for i, t := range mTasks {
 			job.Tasks[i].JobId = job.Id
-			job.Tasks[i].Id = int64(t.ID)
+			job.Tasks[i].Id = int32(t.ID)
 
 			taskID[job.Tasks[i].Name] = job.Tasks[i].Id
 		}
@@ -68,7 +68,7 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 		mRels := make([]TaskRelation, 0)
 		for _, r := range job.GetRelations() {
 			var rel TaskRelation
-			rel.JobID = int64(mJob.ID)
+			rel.JobID = int32(mJob.ID)
 			rel.FromTaskID = taskID[r.FromTask]
 			rel.ToTaskID = taskID[r.ToTask]
 
@@ -100,7 +100,7 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 		if err = toJob(job, &mJob); err != nil {
 			return err
 		}
-		if rst := tx.Save(&mJob); rst.Error != nil {
+		if rst := tx.Save([]*Job{&mJob}); rst.Error != nil {
 			return rst.Error
 		}
 
@@ -117,11 +117,11 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 		}
 
 		// Delete the obsolete task the is valid in history
-		tasksToDel := make([]int64, 0)
+		tasksToDel := make([]int32, 0)
 		for _, tOld := range old.GetTasks() {
 			found := false
 			for _, tNew := range mTasks {
-				if tOld.Id == int64(tNew.ID) {
+				if tOld.Id == int32(tNew.ID) {
 					found = true
 					break
 				}
@@ -144,9 +144,9 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 		mRels := make([]TaskRelation, 0)
 		for _, r := range job.GetRelations() {
 			var rel TaskRelation
-			rel.JobID = int64(mJob.ID)
-			rel.FromTaskID = int64(findTaskID(mTasks, r.FromTask))
-			rel.ToTaskID = int64(findTaskID(mTasks, r.ToTask))
+			rel.JobID = int32(mJob.ID)
+			rel.FromTaskID = int32(findTaskID(mTasks, r.FromTask))
+			rel.ToTaskID = int32(findTaskID(mTasks, r.ToTask))
 
 			mRels = append(mRels, rel)
 		}
@@ -185,7 +185,7 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 	}
 
 	var tasks []Task
-	if rs = ms.db.Where(&Task{JobID: int64(job.ID)}).Find(&tasks); rs.Error != nil {
+	if rs = ms.db.Where(&Task{JobID: int32(job.ID)}).Find(&tasks); rs.Error != nil {
 		return rs.Error
 	}
 
@@ -199,7 +199,7 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 	}
 
 	var rels []TaskRelation
-	rs = ms.db.Where(&TaskRelation{JobID: int64(job.ID)}).Find(&rels)
+	rs = ms.db.Where(&TaskRelation{JobID: int32(job.ID)}).Find(&rels)
 	if rs.Error != nil {
 		return rs.Error
 	}

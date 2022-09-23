@@ -22,15 +22,15 @@ func toJob(in *sodor.Job, out *Job) error {
 }
 
 func fromJob(in *Job, out *sodor.Job) error {
-	out.Id = int64(in.ID)
+	out.Id = int32(in.ID)
 	out.Name = in.Name
-	out.CreateAt = in.CreatedAt.Unix()
-	out.UpdateAt = in.UpdatedAt.Unix()
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
 
 	return nil
 }
 
-func toTask(in *sodor.Task, jobID int64, out *Task) error {
+func toTask(in *sodor.Task, jobID int32, out *Task) error {
 	if in.Id > 0 {
 		out.ID = uint(in.Id)
 	}
@@ -61,8 +61,8 @@ func toTask(in *sodor.Task, jobID int64, out *Task) error {
 }
 
 func fromTask(in *Task, out *sodor.Task) error {
-	out.Id = int64(in.ID)
-	out.JobId = in.JobID
+	out.Id = int32(int64(in.ID))
+	out.JobId = int32(in.JobID)
 	out.Name = in.Name
 	if in.RunningHosts != "" {
 		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.RunningHosts), &out.RunningHosts)
@@ -86,8 +86,8 @@ func fromTask(in *Task, out *sodor.Task) error {
 
 	out.RunningTimeout = int32(in.RunTimeout)
 
-	out.CreateAt = in.CreatedAt.Unix()
-	out.UpdateAt = in.UpdatedAt.Unix()
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
 
 	return nil
 }

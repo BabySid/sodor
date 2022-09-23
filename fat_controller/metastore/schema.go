@@ -26,12 +26,12 @@ type Job struct {
 	gorm.Model
 	Name         string `gorm:"not null;size:64;unique"`
 	AlertRule    string `gorm:"not null;default:'';type:text"` // json
-	AlertGroupID int64  `gorm:"not null"`
+	AlertGroupID int32  `gorm:"not null"`
 }
 
 type Task struct {
 	gorm.Model
-	JobID         int64  `gorm:"not null;uniqueIndex:uniq_task"`
+	JobID         int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	Name          string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
 	RunningHosts  string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
 	SchedulerMode string `gorm:"not null;default:''"`
@@ -42,9 +42,9 @@ type Task struct {
 
 type TaskRelation struct {
 	gorm.Model
-	JobID      int64 `gorm:"not null;uniqueIndex:uniq_relation"`
-	FromTaskID int64 `gorm:"not null"`
-	ToTaskID   int64 `gorm:"not null"`
+	JobID      int32 `gorm:"not null"`
+	FromTaskID int32 `gorm:"not null"`
+	ToTaskID   int32 `gorm:"not null"`
 }
 
 type AlertGroup struct {
@@ -61,29 +61,29 @@ type AlertPlugin struct {
 
 type AlertHistory struct {
 	gorm.Model
-	GroupID     int64  `gorm:"not null"`
-	PluginID    int64  `gorm:"not null"`
+	GroupID     int32  `gorm:"not null"`
+	PluginID    int32  `gorm:"not null"`
 	ParamsValue string `gorm:"not null;type:text"`
 }
 
 type JobInstance struct {
 	gorm.Model
-	JobID    int64  `gorm:"not null"`
-	StartTS  int64  `gorm:"not null;default:0"`
-	StopTS   int64  `gorm:"not null;default:0"`
-	ExitCode int64  `gorm:"not null;default:0"`
+	JobID    int32  `gorm:"not null"`
+	StartTS  int32  `gorm:"not null;default:0"`
+	StopTS   int32  `gorm:"not null;default:0"`
+	ExitCode int32  `gorm:"not null;default:0"`
 	ExitMsg  string `gorm:"not null;default:''"`
 }
 
 type TaskInstance struct {
 	gorm.Model
-	JobID         int64  `gorm:"not null;uniqueIndex:uniq_task"`
-	TaskID        int64  `gorm:"not null;uniqueIndex:uniq_task"`
-	JobInstanceID int64  `gorm:"not null;uniqueIndex:uniq_task"`
-	StartTS       int64  `gorm:"not null;default:0"`
-	StopTS        int64  `gorm:"not null;default:0"`
-	PID           int64  `gorm:"not null;default:0"`
-	ExitCode      int64  `gorm:"not null;default:0"`
+	JobID         int32  `gorm:"not null;uniqueIndex:uniq_task"`
+	TaskID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
+	JobInstanceID int32  `gorm:"not null;uniqueIndex:uniq_task"`
+	StartTS       int32  `gorm:"not null;default:0"`
+	StopTS        int32  `gorm:"not null;default:0"`
+	PID           int32  `gorm:"not null;default:0"`
+	ExitCode      int32  `gorm:"not null;default:0"`
 	ExitMsg       string `gorm:"not null;default:''"`
 	InputVars     string `gorm:"not null;default:'';type:mediumtext"` // json
 	OutputVars    string `gorm:"not null;default:'';type:mediumtext"` // json
@@ -97,8 +97,8 @@ type Thomas struct {
 	Port              int    `gorm:"not null"`
 	PID               int    `gorm:"not null;column:pid"`
 	Tags              string `gorm:"not null;default:'';size:64"`
-	LastStartTime     int64  `gorm:"not null"`
-	LastHeartbeatTime int64  `gorm:"not null"`
+	LastStartTime     int32  `gorm:"not null"`
+	LastHeartbeatTime int32  `gorm:"not null"`
 }
 
 func (t Thomas) TableName() string {

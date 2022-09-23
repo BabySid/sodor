@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/BabySid/gobase v0.0.0-20220909073940-956b7a4bad57
 	github.com/BabySid/gorpc v0.0.0-20220923062643-e29f76ce2fff
-	github.com/BabySid/proto v0.0.0-20220923020456-9e159d390718
+	github.com/BabySid/proto v0.0.0-20220923071950-23927bef8fed
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.10.1
