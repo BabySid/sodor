@@ -24,9 +24,9 @@ func init() {
 
 type Job struct {
 	gorm.Model
-	Name         string `gorm:"not null;size:64;unique"`
-	AlertRule    string `gorm:"not null;default:'';type:text"` // json
-	AlertGroupID int32  `gorm:"not null"`
+	Name string `gorm:"not null;size:64;unique"`
+	//AlertRule    string `gorm:"not null;default:'';type:text"` // json
+	//AlertGroupID int32  `gorm:"not null"`
 }
 
 type Task struct {
