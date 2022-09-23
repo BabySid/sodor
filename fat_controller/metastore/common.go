@@ -1,11 +1,10 @@
 package metastore
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/BabySid/gobase"
+	"github.com/BabySid/gorpc/http/codec"
 	"github.com/BabySid/proto/sodor"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var (
@@ -37,7 +36,7 @@ func toTask(in *sodor.Task, jobID int64, out *Task) error {
 
 	out.SchedulerMode = in.SchedulerMode.String()
 	if in.RoutineSpec != nil {
-		temp, err := protojson.Marshal(in.RoutineSpec)
+		temp, err := codec.DefaultProtoMarshal.Marshal(in.RoutineSpec)
 		if err != nil {
 			return err
 		}
@@ -46,7 +45,7 @@ func toTask(in *sodor.Task, jobID int64, out *Task) error {
 
 	out.Script = in.Script
 	if in.RunningHosts != nil {
-		jsonBytes, err := json.Marshal(in.RunningHosts)
+		jsonBytes, err := codec.DefaultProtoMarshal.Marshal(in.RunningHosts)
 		if err != nil {
 			return err
 		}
@@ -63,7 +62,7 @@ func fromTask(in *Task, out *sodor.Task) error {
 	out.JobId = in.JobID
 	out.Name = in.Name
 	if in.RunningHosts != "" {
-		err := json.Unmarshal([]byte(in.RunningHosts), &out.RunningHosts)
+		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.RunningHosts), &out.RunningHosts)
 		if err != nil {
 			return err
 		}
@@ -75,7 +74,7 @@ func fromTask(in *Task, out *sodor.Task) error {
 
 	if out.SchedulerMode == sodor.SchedulerMode_SM_Crontab {
 		var spec sodor.RoutineSpec
-		err := json.Unmarshal([]byte(in.RoutineSpec), &spec)
+		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.RoutineSpec), &spec)
 		if err != nil {
 			return err
 		}

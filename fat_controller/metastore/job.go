@@ -1,7 +1,6 @@
 package metastore
 
 import (
-	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"gorm.io/gorm"
@@ -197,7 +196,6 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 			return err
 		}
 		jID.Tasks[i] = &task
-		fmt.Printf("%d %v, %+v\n", i, task, t)
 	}
 
 	var rels []TaskRelation
