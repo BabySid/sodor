@@ -31,6 +31,9 @@ func fromJob(in *Job, out *sodor.Job) error {
 }
 
 func toTask(in *sodor.Task, jobID int64, out *Task) error {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	}
 	out.JobID = jobID
 	out.Name = in.Name
 
