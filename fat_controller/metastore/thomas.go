@@ -2,6 +2,7 @@ package metastore
 
 import (
 	"github.com/BabySid/proto/sodor"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -20,4 +21,19 @@ func (ms *metaStore) UpsertThomas(job *sodor.ThomasHandShakeReq) error {
 		job.Id = int32(thomas.ID)
 	}
 	return nil
+}
+
+func (ms *metaStore) SelectThomas(host string) (*Thomas, error) {
+	var thomas Thomas
+	thomas.Host = host
+	//ms.db.
+	if rs := ms.db.Scopes(filterValidThomas).Last(&thomas); rs.Error != nil {
+		return nil, rs.Error
+	}
+	return &thomas, nil
+}
+
+func filterValidThomas(db *gorm.DB) *gorm.DB {
+	const MaxThomasLife = 300
+	return db.Where("heart_beat_time >= ?", time.Now().Unix()-MaxThomasLife)
 }
