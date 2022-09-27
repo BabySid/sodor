@@ -76,6 +76,7 @@ func (jc *jobContext) Run() {
 		taskInstances[i] = &taskIns
 	}
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
+		// todo system warning
 		logJob(jc.job).Warnf("run job failed. InsertJobTaskInstance return err=%s", err)
 		return
 	}
@@ -124,16 +125,18 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		*task = *ins
 	}
 
-	var nextTask int32
-	for i, node := range jc.jobDag.topoNodes {
-		if node.ID() == int64(ins.TaskId) {
-			if i == len(jc.jobDag.topoNodes)-1 {
-				nextTask = 0
-				instances.curInstance.StopTs = ins.StopTs
-				instances.curInstance.ExitCode = ins.ExitCode
-				instances.curInstance.ExitMsg = ins.ExitMsg
-			} else {
-				nextTask = int32(jc.jobDag.topoNodes[i+1].ID())
+	nextTask := 0
+
+	if ins.ExitCode != 0 {
+		jc.buildJobInstance(ins, instances.curInstance)
+	} else {
+		for i, node := range jc.jobDag.topoNodes {
+			if node.ID() == int64(ins.TaskId) {
+				if i == len(jc.jobDag.topoNodes)-1 {
+					jc.buildJobInstance(ins, instances.curInstance)
+				} else {
+					nextTask = int(jc.jobDag.topoNodes[i+1].ID())
+				}
 			}
 		}
 	}
@@ -145,7 +148,13 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		err = metastore.GetInstance().UpdateJobTaskInstance(instances.curInstance, ins)
 	}
 
-	return nextTask, err
+	return int32(nextTask), err
+}
+
+func (jc *jobContext) buildJobInstance(ins *sodor.TaskInstance, jobIns *sodor.JobInstance) {
+	jobIns.StopTs = ins.StopTs
+	jobIns.ExitCode = ins.ExitCode
+	jobIns.ExitMsg = ins.ExitMsg
 }
 
 func (jc *jobContext) runTask(taskId int32) {
@@ -160,6 +169,7 @@ func (jc *jobContext) runTask(taskId int32) {
 	gobase.True(task != nil)
 	log.Infof("run task task_id=%d task_name=%s", task.Id, task.Name)
 	// send task request to thomas
+	// if error found in scheduler, then call UpdateTaskInstance(...)
 }
 
 func (jc *jobContext) loadInstanceFromMetaStore(job *sodor.JobInstance, task *sodor.TaskInstances) error {
