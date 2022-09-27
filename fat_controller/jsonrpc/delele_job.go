@@ -2,6 +2,7 @@ package jsonrpc
 
 import (
 	"errors"
+	"github.com/BabySid/gobase"
 	"github.com/BabySid/gorpc/http/httpapi"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/metastore"
@@ -28,7 +29,8 @@ func (s *Service) DeleteJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
 	}
 
-	_ = scheduler.GetInstance().Remove(params)
+	err = scheduler.GetInstance().Remove(params)
+	gobase.True(err == nil)
 
 	ctx.ToLog("DeleteJob Done: %+v", params)
 	return &sodor.JobReply{Id: params.Id}, nil

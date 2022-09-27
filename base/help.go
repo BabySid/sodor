@@ -1,6 +1,9 @@
 package base
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/BabySid/gobase"
+	"github.com/urfave/cli/v2"
+)
 
 // HelpData is a one shot struct to pass to the usage template
 type HelpData struct {
@@ -15,6 +18,7 @@ type FlagGroup struct {
 }
 
 var (
+	LocalHost string
 	// AppHelpTemplate is the test template for the default, global app help topic.
 	AppHelpTemplate = `NAME:
    {{.App.Name}} - {{.App.Usage}}
@@ -42,3 +46,9 @@ COPYRIGHT:
    {{end}}
 `
 )
+
+func init() {
+	ip, err := gobase.GetLocalIP()
+	gobase.True(err == nil)
+	LocalHost = ip
+}

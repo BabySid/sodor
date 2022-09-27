@@ -29,7 +29,9 @@ func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
 	}
 
-	_ = scheduler.GetInstance().Remove(params)
+	err = scheduler.GetInstance().Remove(params)
+	gobase.True(err == nil)
+
 	if params.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
 		err = scheduler.GetInstance().AddJob(params)
 		gobase.True(err == nil)

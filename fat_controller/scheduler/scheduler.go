@@ -6,6 +6,7 @@ import (
 	"github.com/BabySid/proto/sodor"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
+	"sodor/base"
 	"sodor/fat_controller/metastore"
 	"sync"
 )
@@ -36,11 +37,7 @@ func GetInstance() *scheduler {
 func (s *scheduler) Start() error {
 	s.routine.Start()
 
-	local, err := gobase.GetLocalIP()
-	if err != nil {
-		return err
-	}
-	states, err := metastore.GetInstance().SelectScheduler(local)
+	states, err := metastore.GetInstance().SelectScheduler(base.LocalHost)
 	if err != nil {
 		return err
 	}
@@ -81,21 +78,15 @@ func (s *scheduler) initOnce() error {
 }
 
 func (s *scheduler) AddJob(job *sodor.Job) error {
-	if job.ScheduleMode != sodor.ScheduleMode_SM_Crontab {
-		log.Warnf("job schdulemode is not crontab: %v", job.ScheduleMode)
-		return nil
-	}
+	gobase.True(job.ScheduleMode == sodor.ScheduleMode_SM_Crontab)
+
 	ctx := newJobContext()
 	err := ctx.setJob(job)
-	if err != nil {
-		log.Warnf("job init-set failed: %s", err)
-		return err
-	}
+	gobase.True(err == nil)
 
 	cid, err := s.routine.AddJob(job.RoutineSpec.CtSpec, ctx)
-	if err != nil {
-		return err
-	}
+	gobase.True(err == nil)
+
 	ctx.cronID = cid
 
 	s.jobs.Store(job.Id, ctx)
@@ -107,12 +98,6 @@ func (s *scheduler) Remove(job *sodor.Job) error {
 	if ok {
 		jc := ctx.(*jobContext)
 		s.routine.Remove(jc.cronID)
-
-		local, _ := gobase.GetLocalIP()
-		_ = metastore.GetInstance().DeleteScheduler(&metastore.ScheduleState{
-			JobID: job.Id,
-			Host:  local,
-		})
 	}
 
 	return nil
@@ -123,7 +108,7 @@ func (s *scheduler) UpdateTaskInstance(ins *sodor.TaskInstance) error {
 	if !ok {
 		log.Warnf("cannot found jobCtx. maybe delete already. jobid=%d taskid=%d job_instance=%d task_instance=%d",
 			ins.JobId, ins.TaskId, ins.JobInstanceId, ins.Id)
-		return errors.New("task is not in a routine job")
+		return NotRoutineJob
 	}
 
 	jc := ctx.(*jobContext)

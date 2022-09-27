@@ -1,6 +1,9 @@
 package metastore
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 // This is the data structure of the storage layer
 
@@ -21,6 +24,12 @@ func init() {
 		&TaskInstance{},
 		&Thomas{},
 	}
+}
+
+type TableModel struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Job struct {
@@ -68,7 +77,7 @@ type AlertHistory struct {
 }
 
 type ScheduleState struct {
-	gorm.Model
+	TableModel
 	JobID int32  `gorm:"not null;uniqueIndex:uniq_job"`
 	Host  string `gorm:"not null;size:64;uniqueIndex:uniq_job"`
 	//JobInstanceID int32  `gorm:"not null;default:0"` // 0 is init
@@ -101,7 +110,7 @@ type TaskInstance struct {
 }
 
 type Thomas struct {
-	gorm.Model
+	TableModel
 	Name          string `gorm:"size:64;not null"`
 	Version       string `gorm:"size:64;not null"`
 	Proto         string `gorm:"size:16;not null"`

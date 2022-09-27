@@ -43,8 +43,7 @@ func checkTaskValid(job *sodor.Job, create bool) error {
 	}
 
 	s := make(map[string]int)
-	taskID := 0
-	for _, task := range job.GetTasks() {
+	for i, task := range job.GetTasks() {
 		if create && task.Id > 0 {
 			return fmt.Errorf("task.id must not be set")
 		}
@@ -63,8 +62,7 @@ func checkTaskValid(job *sodor.Job, create bool) error {
 		if _, ok := s[task.Name]; ok {
 			return fmt.Errorf("task.name is duplicated in the job")
 		}
-		s[task.Name] = taskID
-		taskID++
+		s[task.Name] = i
 	}
 
 	for _, rel := range job.GetRelations() {
@@ -86,8 +84,9 @@ func checkTaskValid(job *sodor.Job, create bool) error {
 		g.SetEdge(g.NewEdge(simple.Node(s[rel.FromTask]), simple.Node(s[rel.ToTask])))
 	}
 
-	cycles := topo.DirectedCyclesIn(g)
-	if len(cycles) != 0 {
+	_, err := topo.Sort(g)
+	//cycles := topo.DirectedCyclesIn(g)
+	if err != nil {
 		return fmt.Errorf("there are cycles in the job")
 	}
 

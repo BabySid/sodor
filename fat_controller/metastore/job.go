@@ -4,6 +4,7 @@ import (
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"gorm.io/gorm"
+	"sodor/base"
 )
 
 func (ms *metaStore) JobExist(job *sodor.Job) (bool, error) {
@@ -45,13 +46,13 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 
 		job.Id = int32(mJob.ID)
 
-		mTasks := make([]Task, 0)
-		for _, t := range job.GetTasks() {
+		mTasks := make([]Task, len(job.GetTasks()))
+		for i, t := range job.GetTasks() {
 			var task Task
 			if err := toTask(t, job.Id, &task); err != nil {
 				return err
 			}
-			mTasks = append(mTasks, task)
+			mTasks[i] = task
 		}
 		if rst := tx.Create(&mTasks); rst.Error != nil {
 			return rst.Error
@@ -79,6 +80,17 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 			return rst.Error
 		}
 
+		if job.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+			stat := &ScheduleState{
+				JobID: job.Id,
+				Host:  base.LocalHost,
+			}
+
+			if rst := tx.Create(&stat); rst.Error != nil {
+				return rst.Error
+			}
+		}
+
 		return nil
 	})
 
@@ -88,58 +100,38 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 	gobase.True(job.Id > 0)
 
-	var old sodor.Job
-	old.Id = job.Id
-	err := ms.SelectJob(&old)
-	if err != nil {
-		return err
-	}
-
-	err = ms.db.Transaction(func(tx *gorm.DB) error {
+	err := ms.db.Transaction(func(tx *gorm.DB) error {
 		var mJob Job
-		if err = toJob(job, &mJob); err != nil {
+		if err := toJob(job, &mJob); err != nil {
 			return err
 		}
-		// use []*Job to generate sqls like `insert xxx on duplicated key ...`
+		// use []*Job to generate sqls like `insert xxx on duplicated key(id) ...`
 		if rst := tx.Save([]*Job{&mJob}); rst.Error != nil {
 			return rst.Error
 		}
 
-		mTasks := make([]*Task, 0)
-		for _, t := range job.GetTasks() {
+		mTasks := make([]*Task, len(job.GetTasks()))
+		for i, t := range job.GetTasks() {
 			var task Task
-			if err = toTask(t, job.Id, &task); err != nil {
+			if err := toTask(t, job.Id, &task); err != nil {
 				return err
 			}
-			mTasks = append(mTasks, &task)
+			mTasks[i] = &task
 		}
 		if rst := tx.Save(&mTasks); rst.Error != nil {
 			return rst.Error
 		}
 
+		tasksToRetain := make([]int32, 0)
 		for i, t := range mTasks {
 			job.Tasks[i].JobId = job.Id
 			job.Tasks[i].Id = int32(t.ID)
+			tasksToRetain = append(tasksToRetain, job.Tasks[i].Id)
 		}
 
 		// Delete the obsolete task the is valid in history
-		tasksToDel := make([]int32, 0)
-		for _, tOld := range old.GetTasks() {
-			found := false
-			for _, tNew := range mTasks {
-				if tOld.Id == int32(tNew.ID) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				tasksToDel = append(tasksToDel, tOld.Id)
-			}
-		}
-		if len(tasksToDel) > 0 {
-			if rs := tx.Delete(&Task{}, tasksToDel); rs.Error != nil {
-				return rs.Error
-			}
+		if rs := tx.Where("job_id = ? and id not in ?", job.Id, tasksToRetain).Delete(&Task{}); rs.Error != nil {
+			return rs.Error
 		}
 
 		// Because the relational does not have other associated attributes, it can be deleted directly
@@ -159,6 +151,21 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 
 		if rst := tx.Create(&mRels); rst.Error != nil {
 			return rst.Error
+		}
+
+		if rst := tx.Delete(&ScheduleState{JobID: job.Id, Host: base.LocalHost}); rst.Error != nil {
+			return rst.Error
+		}
+
+		if job.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+			stat := &ScheduleState{
+				JobID: job.Id,
+				Host:  base.LocalHost,
+			}
+
+			if rst := tx.Create(&stat); rst.Error != nil {
+				return rst.Error
+			}
 		}
 
 		return nil
@@ -183,6 +190,10 @@ func (ms *metaStore) DeleteJob(jID *sodor.Job) error {
 
 		if rs := tx.Where("job_id = ?", job.ID).Delete(&TaskRelation{}); rs.Error != nil {
 			return rs.Error
+		}
+
+		if rst := tx.Delete(&ScheduleState{JobID: jID.Id, Host: base.LocalHost}); rst.Error != nil {
+			return rst.Error
 		}
 		return nil
 	})
