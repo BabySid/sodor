@@ -5,6 +5,8 @@ import (
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/gorpc/http/codec"
 	"github.com/BabySid/proto/sodor"
+	"google.golang.org/protobuf/types/known/structpb"
+	"time"
 )
 
 var (
@@ -18,6 +20,15 @@ func toJob(in *sodor.Job, out *Job) error {
 		out.ID = uint(in.Id)
 	}
 
+	out.SchedulerMode = in.ScheduleMode.String()
+	if in.RoutineSpec != nil {
+		temp, err := codec.DefaultProtoMarshal.Marshal(in.RoutineSpec)
+		if err != nil {
+			return err
+		}
+		out.RoutineSpec = string(temp)
+	}
+
 	return nil
 }
 
@@ -26,6 +37,18 @@ func fromJob(in *Job, out *sodor.Job) error {
 	out.Name = in.Name
 	out.CreateAt = int32(in.CreatedAt.Unix())
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
+
+	out.ScheduleMode = sodor.ScheduleMode(sodor.ScheduleMode_value[in.SchedulerMode])
+
+	if out.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+		var spec sodor.RoutineSpec
+		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.RoutineSpec), &spec)
+		if err != nil {
+			return err
+		}
+
+		out.RoutineSpec = &spec
+	}
 
 	return nil
 }
@@ -36,15 +59,6 @@ func toTask(in *sodor.Task, jobID int32, out *Task) error {
 	}
 	out.JobID = jobID
 	out.Name = in.Name
-
-	out.SchedulerMode = in.SchedulerMode.String()
-	if in.RoutineSpec != nil {
-		temp, err := codec.DefaultProtoMarshal.Marshal(in.RoutineSpec)
-		if err != nil {
-			return err
-		}
-		out.RoutineSpec = string(temp)
-	}
 
 	out.Script = in.Script
 	if in.RunningHosts != nil {
@@ -72,22 +86,96 @@ func fromTask(in *Task, out *sodor.Task) error {
 	}
 
 	out.Script = in.Script
-	out.SchedulerMode = sodor.SchedulerMode(sodor.SchedulerMode_value[in.SchedulerMode])
-
-	if out.SchedulerMode == sodor.SchedulerMode_SM_Crontab {
-		var spec sodor.RoutineSpec
-		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.RoutineSpec), &spec)
-		if err != nil {
-			return err
-		}
-
-		out.RoutineSpec = &spec
-	}
 
 	out.RunningTimeout = int32(in.RunTimeout)
 
 	out.CreateAt = int32(in.CreatedAt.Unix())
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
+
+	return nil
+}
+
+func toThomas(in *sodor.ThomasHandShakeReq, out *Thomas) error {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	}
+	out.Name = in.Name
+	out.Version = in.Version
+	out.Proto = in.Proto
+	out.Host = in.Host
+	out.Port = int(in.Port)
+	out.PID = int(in.Pid)
+	out.StartTime = in.StartTime
+	out.HeartbeatTime = int32(time.Now().Unix())
+	return nil
+}
+
+func toJobInstance(in *sodor.JobInstance, out *JobInstance) error {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	}
+
+	out.JobID = in.JobId
+	out.ScheduleTS = in.ScheduleTs
+	out.StartTS = in.StartTs
+	out.StopTS = in.StopTs
+	out.ExitCode = in.ExitCode
+	out.ExitMsg = in.ExitMsg
+
+	return nil
+}
+
+func toTaskInstance(in *sodor.TaskInstance, out *TaskInstance) error {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	}
+
+	out.JobID = in.JobId
+	out.TaskID = in.TaskId
+	out.JobInstanceID = in.JobInstanceId
+	out.StartTS = in.StartTs
+	out.StopTS = in.StopTs
+	out.Host = in.Host
+	out.PID = in.Pid
+	out.ExitCode = in.ExitCode
+	out.ExitMsg = in.ExitMsg
+	out.OutputVars = in.OutputVars.AsMap()
+
+	return nil
+}
+
+func fromJobInstance(in *JobInstance, out *sodor.JobInstance) error {
+	out.Id = int32(in.ID)
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
+	out.JobId = in.JobID
+	out.ScheduleTs = in.ScheduleTS
+	out.StartTs = in.StartTS
+	out.StopTs = in.StopTS
+	out.ExitCode = in.ExitCode
+	out.ExitMsg = in.ExitMsg
+
+	return nil
+}
+
+func fromTaskInstance(in *TaskInstance, out *sodor.TaskInstance) error {
+	out.Id = int32(in.ID)
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
+	out.JobId = in.JobID
+	out.TaskId = in.TaskID
+	out.JobInstanceId = in.JobInstanceID
+	out.StartTs = in.StartTS
+	out.StopTs = in.StopTS
+	out.Host = in.Host
+	out.Pid = in.PID
+	out.ExitCode = in.ExitCode
+	out.ExitMsg = in.ExitMsg
+	outVars, err := structpb.NewStruct(in.OutputVars)
+	if err != nil {
+		return err
+	}
+	out.OutputVars = outVars
 
 	return nil
 }

@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/BabySid/proto/sodor"
-	"github.com/robfig/cron/v3"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
 	"sodor/fat_controller/metastore"
+	"sodor/fat_controller/scheduler"
 	"strings"
 )
 
@@ -25,6 +25,17 @@ func checkTaskValid(job *sodor.Job, create bool) error {
 
 	if len(strings.TrimSpace(job.Name)) == 0 {
 		return errors.New("job.name is empty")
+	}
+
+	if job.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+		if job.GetRoutineSpec() == nil || job.GetRoutineSpec().CtSpec == "" {
+			return fmt.Errorf("task.spec must be set")
+		}
+
+		parser := scheduler.NewParser()
+		if _, err := parser.Parse(job.GetRoutineSpec().CtSpec); err != nil {
+			return fmt.Errorf("invalid task.spec. %s", err)
+		}
 	}
 
 	if len(job.GetTasks()) == 0 {
@@ -47,19 +58,6 @@ func checkTaskValid(job *sodor.Job, create bool) error {
 
 		if len(strings.TrimSpace(task.Script)) == 0 {
 			return fmt.Errorf("task.script is empty")
-		}
-
-		if task.SchedulerMode == sodor.SchedulerMode_SM_Crontab {
-			if task.GetRoutineSpec() == nil || task.GetRoutineSpec().CtSpec == "" {
-				return fmt.Errorf("task.spec must be set")
-			}
-
-			parser := cron.NewParser(
-				cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor,
-			)
-			if _, err := parser.Parse(task.GetRoutineSpec().CtSpec); err != nil {
-				return fmt.Errorf("invalid task.spec. %s", err)
-			}
 		}
 
 		if _, ok := s[task.Name]; ok {

@@ -58,7 +58,7 @@ func (ms *metaStore) initOnce(uri string) error {
 
 func (ms *metaStore) AutoMigrate() error {
 	db := ms.db.Set("gorm:table_options", "ENGINE=InnoDB")
-	for _, tbl := range totalTable {
+	for _, tbl := range totalTables {
 		if db.Migrator().HasTable(tbl) {
 			err := db.Migrator().DropTable(tbl)
 			if err != nil {
@@ -67,7 +67,7 @@ func (ms *metaStore) AutoMigrate() error {
 			}
 		}
 	}
-	for _, tbl := range totalTable {
+	for _, tbl := range totalTables {
 		err := db.Migrator().CreateTable(tbl)
 		if err != nil {
 			log.Warn(err)

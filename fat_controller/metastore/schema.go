@@ -5,17 +5,18 @@ import "gorm.io/gorm"
 // This is the data structure of the storage layer
 
 var (
-	totalTable []interface{}
+	totalTables []interface{}
 )
 
 func init() {
-	totalTable = []interface{}{
+	totalTables = []interface{}{
 		&Job{},
 		&Task{},
 		&TaskRelation{},
 		&AlertGroup{},
 		&AlertPlugin{},
 		&AlertHistory{},
+		&ScheduleState{},
 		&JobInstance{},
 		&TaskInstance{},
 		&Thomas{},
@@ -24,20 +25,20 @@ func init() {
 
 type Job struct {
 	gorm.Model
-	Name string `gorm:"not null;size:64;unique"`
+	Name          string `gorm:"not null;size:64;unique"`
+	SchedulerMode string `gorm:"not null;default:''"`
+	RoutineSpec   string `gorm:"not null;default:'';size:128"` // {"ct_spec":"* * *"}
 	//AlertRule    string `gorm:"not null;default:'';type:text"` // json
 	//AlertGroupID int32  `gorm:"not null"`
 }
 
 type Task struct {
 	gorm.Model
-	JobID         int32  `gorm:"not null;uniqueIndex:uniq_task"`
-	Name          string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
-	RunningHosts  string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
-	SchedulerMode string `gorm:"not null;default:''"`
-	RoutineSpec   string `gorm:"not null;default:'';size:128"` // {"ct_spec":"* * *"}
-	Script        string `gorm:"not null;default:'';type:mediumtext"`
-	RunTimeout    int    `gorm:"not null;default:0"` // seconds
+	JobID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
+	Name         string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
+	RunningHosts string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
+	Script       string `gorm:"not null;default:'';type:mediumtext"`
+	RunTimeout   int    `gorm:"not null;default:0"` // seconds
 }
 
 type TaskRelation struct {
@@ -66,14 +67,22 @@ type AlertHistory struct {
 	ParamsValue string `gorm:"not null;type:text"`
 }
 
+type ScheduleState struct {
+	gorm.Model
+	JobID int32  `gorm:"not null;uniqueIndex:uniq_job"`
+	Host  string `gorm:"not null;size:64;uniqueIndex:uniq_job"`
+	//JobInstanceID int32  `gorm:"not null;default:0"` // 0 is init
+	//JobScheduleTime int32  `gorm:"not null;default:0"`
+}
+
 type JobInstance struct {
 	gorm.Model
-	JobID    int32  `gorm:"not null"`
-	StartTS  int32  `gorm:"not null;default:0"`
-	StopTS   int32  `gorm:"not null;default:0"`
-	Progress string `gorm:"not null;default:''"` // json
-	ExitCode int32  `gorm:"not null;default:0"`
-	ExitMsg  string `gorm:"not null;default:''"`
+	JobID      int32  `gorm:"not null"`
+	ScheduleTS int32  `gorm:"not null:default:0"`
+	StartTS    int32  `gorm:"not null;default:0"`
+	StopTS     int32  `gorm:"not null;default:0"`
+	ExitCode   int32  `gorm:"not null;default:0"`
+	ExitMsg    string `gorm:"not null;default:''"`
 }
 
 type TaskInstance struct {
@@ -83,23 +92,24 @@ type TaskInstance struct {
 	JobInstanceID int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	StartTS       int32  `gorm:"not null;default:0"`
 	StopTS        int32  `gorm:"not null;default:0"`
+	Host          string `gorm:"not null;default:''"`
 	PID           int32  `gorm:"not null;default:0"`
 	ExitCode      int32  `gorm:"not null;default:0"`
 	ExitMsg       string `gorm:"not null;default:''"`
-	InputVars     string `gorm:"not null;default:'';type:mediumtext"` // json
-	OutputVars    string `gorm:"not null;default:'';type:mediumtext"` // json
+	//InputVars     string `gorm:"not null;default:'';type:mediumtext"` // json
+	OutputVars map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
 }
 
 type Thomas struct {
 	gorm.Model
-	Version           string `gorm:"size:64;not null"`
-	Proto             string `gorm:"size:16;not null"`
-	Host              string `gorm:"size:32;not null"` // ip. e.g. 1.2.3.4
-	Port              int    `gorm:"not null"`
-	PID               int    `gorm:"not null;column:pid"`
-	Tags              string `gorm:"not null;default:'';size:64"`
-	LastStartTime     int32  `gorm:"not null"`
-	LastHeartbeatTime int32  `gorm:"not null"`
+	Name          string `gorm:"size:64;not null"`
+	Version       string `gorm:"size:64;not null"`
+	Proto         string `gorm:"size:16;not null"`
+	Host          string `gorm:"size:32;not null"` // ip. e.g. 1.2.3.4
+	Port          int    `gorm:"not null"`
+	PID           int    `gorm:"not null;column:pid"`
+	StartTime     int32  `gorm:"not null"`
+	HeartbeatTime int32  `gorm:"not null"`
 }
 
 func (t Thomas) TableName() string {

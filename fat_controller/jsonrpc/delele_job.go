@@ -5,6 +5,7 @@ import (
 	"github.com/BabySid/gorpc/http/httpapi"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/metastore"
+	"sodor/fat_controller/scheduler"
 )
 
 func (s *Service) DeleteJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, *httpapi.JsonRpcError) {
@@ -26,6 +27,8 @@ func (s *Service) DeleteJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 	if err = metastore.GetInstance().DeleteJob(params); err != nil {
 		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
 	}
+
+	_ = scheduler.GetInstance().Remove(params)
 
 	ctx.ToLog("DeleteJob Done: %+v", params)
 	return &sodor.JobReply{Id: params.Id}, nil

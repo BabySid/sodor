@@ -100,6 +100,7 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 		if err = toJob(job, &mJob); err != nil {
 			return err
 		}
+		// use []*Job to generate sqls like `insert xxx on duplicated key ...`
 		if rst := tx.Save([]*Job{&mJob}); rst.Error != nil {
 			return rst.Error
 		}
@@ -114,6 +115,11 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 		}
 		if rst := tx.Save(&mTasks); rst.Error != nil {
 			return rst.Error
+		}
+
+		for i, t := range mTasks {
+			job.Tasks[i].JobId = job.Id
+			job.Tasks[i].Id = int32(t.ID)
 		}
 
 		// Delete the obsolete task the is valid in history
@@ -135,8 +141,6 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 				return rs.Error
 			}
 		}
-
-		//tx.Delete(&tasksToDel)
 
 		// Because the relational does not have other associated attributes, it can be deleted directly
 		if rs := tx.Where("job_id = ?", job.Id).Delete(&TaskRelation{}); rs.Error != nil {
@@ -176,7 +180,7 @@ func (ms *metaStore) DeleteJob(jID *sodor.Job) error {
 		if rs := tx.Where("job_id = ?", job.ID).Delete(&Task{}); rs.Error != nil {
 			return rs.Error
 		}
-		
+
 		if rs := tx.Where("job_id = ?", job.ID).Delete(&TaskRelation{}); rs.Error != nil {
 			return rs.Error
 		}
@@ -191,7 +195,7 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 	gobase.True(jID.Id > 0)
 
 	var job Job
-	rs := ms.db.Find(&job, jID.Id)
+	rs := ms.db.Take(&job, jID.Id)
 	if rs.Error != nil {
 		return rs.Error
 	}
@@ -255,10 +259,4 @@ func (ms *metaStore) ListJobs() (*sodor.Jobs, error) {
 	}
 
 	return &sJobs, nil
-}
-
-func (ms *metaStore) SelectJobInstance(jID *sodor.Job) error {
-	gobase.True(jID.Id > 0)
-
-	return nil
 }

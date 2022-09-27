@@ -2,9 +2,11 @@ package jsonrpc
 
 import (
 	"errors"
+	"github.com/BabySid/gobase"
 	"github.com/BabySid/gorpc/http/httpapi"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/metastore"
+	"sodor/fat_controller/scheduler"
 )
 
 func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, *httpapi.JsonRpcError) {
@@ -25,6 +27,11 @@ func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 	err = metastore.GetInstance().InsertJob(params)
 	if err != nil {
 		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
+	}
+
+	if params.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+		err = scheduler.GetInstance().AddJob(params)
+		gobase.True(err == nil)
 	}
 
 	ctx.ToLog("CreateJob Done: %+v", params)
