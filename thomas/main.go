@@ -3,17 +3,28 @@ package main
 import (
 	"fmt"
 	"github.com/BabySid/gobase"
+	"github.com/BabySid/gorpc"
+	"github.com/BabySid/gorpc/http/httpcfg"
+	logOption "github.com/BabySid/gorpc/log"
+	"github.com/BabySid/proto/sodor"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"io"
 	"os"
 	"path/filepath"
 	"sodor/base"
+	"sodor/thomas/grpc"
 	"sodor/thomas/task"
 	"sort"
 	"syscall"
 )
 
-// todo add signal handler
+var (
+	AppVersion string
+	AppName    = filepath.Base(os.Args[0])
+	server     *gorpc.Server
+)
+
 func main() {
 	ss := gobase.NewSignalSet()
 	ss.Register(syscall.SIGTERM, exit)
@@ -32,16 +43,12 @@ func NewApp() *cli.App {
 	app.EnableBashCompletion = true
 	app.UseShortOptionHandling = true
 	app.Name = filepath.Base(os.Args[0])
-	app.Version = "1.0"
+	app.Version = AppVersion
 	app.Usage = "thomas: a famous little tank engine run job from fat_controller"
 
 	app.Action = runApp
 
-	app.Flags = []cli.Flag{
-		grpcPort,
-		standalone,
-		fatControllerAddr,
-	}
+	app.Flags = globalFlags
 	app.Commands = []*cli.Command{
 		task.ShellCommand,
 	}
@@ -66,13 +73,36 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
-	if ctx.String("addr") == "self" {
-		return cli.Exit("run failed", 1)
+	if ctx.Bool(standalone.Name) {
+		runStandalone(ctx)
+		return nil
 	}
 
-	return nil
+	var rotator *logOption.Rotator
+	if !ctx.Bool(debugMode.Name) {
+		rotator = &logOption.Rotator{
+			LogMaxAge: ctx.Int(logMaxAge.Name),
+			LogPath:   ctx.String(logPath.Name),
+		}
+	}
+
+	server = gorpc.NewServer(httpcfg.DefaultOption)
+	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, &grpc.Service{})
+
+	return server.Run(gorpc.ServerOption{
+		Addr:        ctx.String(listenAddr.Name),
+		ClusterName: "thomas",
+		Rotator:     rotator,
+		LogLevel:    ctx.String(logLevel.Name),
+	})
 }
 
 func exit(sig os.Signal) {
-	fmt.Printf("recv %s signal to exit\n", sig)
+	log.Infof("%s exit by recving the signal %v", AppName, sig)
+	_ = server.Stop()
+	os.Exit(0)
+}
+
+func runStandalone(ctx *cli.Context) {
+
 }

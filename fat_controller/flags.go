@@ -56,18 +56,20 @@ var (
 		Value:       false,
 	}
 
+	globalFlags = []cli.Flag{
+		listenAddr,
+		metaStore,
+		initMetaStore,
+		logLevel,
+		logPath,
+		logMaxAge,
+		debugMode,
+	}
+
 	appHelpFlagGroups = []base.FlagGroup{
 		{
-			Name: "GLOBAL",
-			Flags: []cli.Flag{
-				listenAddr,
-				metaStore,
-				initMetaStore,
-				logLevel,
-				logPath,
-				logMaxAge,
-				debugMode,
-			},
+			Name:  "GLOBAL",
+			Flags: globalFlags,
 		},
 	}
 )

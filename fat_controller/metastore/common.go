@@ -60,6 +60,7 @@ func toTask(in *sodor.Task, jobID int32, out *Task) error {
 	out.JobID = jobID
 	out.Name = in.Name
 
+	out.Type = in.Type.String()
 	out.Script = in.Script
 	if in.RunningHosts != nil {
 		jsonBytes, err := codec.DefaultProtoMarshal.Marshal(in.RunningHosts)
@@ -85,6 +86,7 @@ func fromTask(in *Task, out *sodor.Task) error {
 		}
 	}
 
+	out.Type = sodor.TaskType(sodor.TaskType_value[in.Type])
 	out.Script = in.Script
 
 	out.RunningTimeout = int32(in.RunTimeout)
@@ -95,10 +97,31 @@ func fromTask(in *Task, out *sodor.Task) error {
 	return nil
 }
 
-func toThomas(in *sodor.ThomasHandShakeReq, out *Thomas) error {
+func fromThomas(in *Thomas, out *sodor.ThomasInstance) error {
+	out.Id = int32(in.ID)
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
+	out.Name = in.Name
+	out.Version = in.Version
+	out.Proto = in.Proto
+	out.Host = in.Host
+	out.Port = int32(in.Port)
+	out.Pid = int32(in.PID)
+	out.StartTime = in.StartTime
+	out.HeartBeatTime = in.HeartBeatTime
+	metrics, err := structpb.NewStruct(in.Metrics)
+	if err != nil {
+		return err
+	}
+	out.Metrics = metrics
+	return nil
+}
+
+func toThomas(in *sodor.ThomasInstance, out *Thomas) error {
 	if in.Id > 0 {
 		out.ID = uint(in.Id)
 	}
+
 	out.Name = in.Name
 	out.Version = in.Version
 	out.Proto = in.Proto
@@ -106,7 +129,20 @@ func toThomas(in *sodor.ThomasHandShakeReq, out *Thomas) error {
 	out.Port = int(in.Port)
 	out.PID = int(in.Pid)
 	out.StartTime = in.StartTime
-	out.HeartbeatTime = int32(time.Now().Unix())
+	out.HeartBeatTime = int32(time.Now().Unix())
+	out.Metrics = in.Metrics.AsMap()
+
+	return nil
+}
+
+func toSimpleThomas(in *sodor.ThomasInstance, out *Thomas) error {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	} else {
+		out.Host = in.Host
+		out.Port = int(in.Port)
+	}
+
 	return nil
 }
 

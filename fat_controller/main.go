@@ -6,12 +6,14 @@ import (
 	"github.com/BabySid/gorpc"
 	"github.com/BabySid/gorpc/http/httpcfg"
 	logOption "github.com/BabySid/gorpc/log"
+	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"io"
 	"os"
 	"path/filepath"
 	"sodor/base"
+	"sodor/fat_controller/grpc"
 	"sodor/fat_controller/jsonrpc"
 	"sodor/fat_controller/metastore"
 	"sort"
@@ -47,15 +49,7 @@ func NewApp() *cli.App {
 
 	app.Action = runApp
 
-	app.Flags = []cli.Flag{
-		listenAddr,
-		metaStore,
-		initMetaStore,
-		logLevel,
-		logPath,
-		logMaxAge,
-		debugMode,
-	}
+	app.Flags = globalFlags
 	app.Commands = []*cli.Command{}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
@@ -90,6 +84,7 @@ func runApp(ctx *cli.Context) error {
 
 	server = gorpc.NewServer(httpcfg.ServerOption{Codec: httpcfg.ProtobufCodec})
 	_ = server.RegisterJsonRPC("rpc", &jsonrpc.Service{})
+	_ = server.RegisterGrpc(&sodor.FatController_ServiceDesc, &grpc.Service{})
 
 	var rotator *logOption.Rotator
 	if !ctx.Bool(debugMode.Name) {

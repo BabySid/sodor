@@ -46,6 +46,7 @@ type Task struct {
 	JobID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	Name         string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
 	RunningHosts string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
+	Type         string `gorm:"not null;default:'';size:16"`
 	Script       string `gorm:"not null;default:'';type:mediumtext"`
 	RunTimeout   int    `gorm:"not null;default:0"` // seconds
 }
@@ -111,14 +112,15 @@ type TaskInstance struct {
 
 type Thomas struct {
 	TableModel
-	Name          string `gorm:"size:64;not null"`
-	Version       string `gorm:"size:64;not null"`
-	Proto         string `gorm:"size:16;not null"`
-	Host          string `gorm:"size:32;not null"` // ip. e.g. 1.2.3.4
-	Port          int    `gorm:"not null"`
-	PID           int    `gorm:"not null;column:pid"`
-	StartTime     int32  `gorm:"not null"`
-	HeartbeatTime int32  `gorm:"not null"`
+	Name          string                 `gorm:"size:64;not null"`
+	Version       string                 `gorm:"size:64;not null"`
+	Proto         string                 `gorm:"size:16;not null"`
+	Host          string                 `gorm:"size:32;not null;uniqueIndex:uniq_thomas"` // ip. e.g. 1.2.3.4
+	Port          int                    `gorm:"not null;uniqueIndex:uniq_thomas"`
+	PID           int                    `gorm:"not null;column:pid"`
+	StartTime     int32                  `gorm:"not null"`
+	HeartBeatTime int32                  `gorm:"not null"`
+	Metrics       map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
 }
 
 func (t Thomas) TableName() string {

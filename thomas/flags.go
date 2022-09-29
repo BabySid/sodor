@@ -6,32 +6,60 @@ import (
 )
 
 var (
-	grpcPort = &cli.IntFlag{
-		Name:        "grpc.port",
-		DefaultText: "random",
-		Usage:       "GRPC server listening port",
-		Value:       0,
+	listenAddr = &cli.StringFlag{
+		Name:        "listen_addr",
+		Usage:       "Set the listen address",
+		DefaultText: ":9528",
+		Value:       ":9528",
+	}
+
+	logLevel = &cli.StringFlag{
+		Name:        "log.level",
+		Usage:       "Set the log level",
+		DefaultText: "info",
+		Value:       "info",
+	}
+
+	logPath = &cli.StringFlag{
+		Name:        "log.path",
+		Usage:       "Set the path for writing the log",
+		DefaultText: ".",
+		Value:       "./",
+	}
+
+	logMaxAge = &cli.IntFlag{
+		Name:        "log.max_age",
+		Usage:       "Set the max age for the log file ",
+		DefaultText: "24*7 hours",
+		Value:       24 * 7,
+	}
+
+	debugMode = &cli.BoolFlag{
+		Name:        "debug",
+		Usage:       "Set the debug mode",
+		DefaultText: "false",
+		Value:       false,
 	}
 
 	standalone = &cli.BoolFlag{
 		Name:  "standalone",
-		Usage: "Run as a standalone service, DO NOT interact with fat_controller",
+		Usage: "Run as a standalone process, DO NOT interact with fat_controller",
 		Value: false,
 	}
 
-	fatControllerAddr = &cli.StringFlag{
-		Name:  "fat_controller_addr",
-		Usage: "Set the fat_controller addresses separated with commas(,)",
+	globalFlags = []cli.Flag{
+		listenAddr,
+		standalone,
+		logLevel,
+		logPath,
+		logMaxAge,
+		debugMode,
 	}
 
 	appHelpFlagGroups = []base.FlagGroup{
 		{
-			Name: "GLOBAL",
-			Flags: []cli.Flag{
-				grpcPort,
-				standalone,
-				fatControllerAddr,
-			},
+			Name:  "GLOBAL",
+			Flags: globalFlags,
 		},
 	}
 )

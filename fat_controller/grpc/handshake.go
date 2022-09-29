@@ -10,12 +10,12 @@ import (
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) HandShakeWithThomas(ctx context.Context, req *sodor.ThomasHandShakeReq) (*sodor.ThomasHandShakeResp, error) {
+func (s *Service) HandShake(ctx context.Context, req *sodor.ThomasInstance) (*sodor.ThomasReply, error) {
 	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
-	log.Infof("HandShakeWithThomas from %s %d", ip, req.Id)
+	log.Infof("HandShake from %s %d", ip, req.Id)
 
 	if err := metastore.GetInstance().UpsertThomas(req); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &sodor.ThomasHandShakeResp{Id: req.Id}, nil
+	return &sodor.ThomasReply{Id: req.Id}, nil
 }
