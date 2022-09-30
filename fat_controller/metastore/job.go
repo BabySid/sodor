@@ -80,7 +80,7 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 			return rst.Error
 		}
 
-		if job.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+		if job.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {
 			stat := &ScheduleState{
 				JobID: job.Id,
 				Host:  base.LocalHost,
@@ -157,7 +157,7 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 			return rst.Error
 		}
 
-		if job.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+		if job.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {
 			stat := &ScheduleState{
 				JobID: job.Id,
 				Host:  base.LocalHost,

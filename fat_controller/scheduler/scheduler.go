@@ -50,7 +50,7 @@ func (s *scheduler) Start() error {
 			return err
 		}
 
-		if job.ScheduleMode != sodor.ScheduleMode_SM_Crontab {
+		if job.ScheduleMode != sodor.ScheduleMode_ScheduleMode_Crontab {
 			log.Warnf("job schdulemode is not crontab: %v", job.ScheduleMode)
 			continue
 		}
@@ -69,6 +69,16 @@ func (s *scheduler) Start() error {
 
 		s.jobs.Store(job.Id, ctx)
 	}
+
+	return s.addBuiltInJobs()
+}
+
+func (s *scheduler) addBuiltInJobs() error {
+	// every minute
+	_, err := s.routine.AddFunc("0 */1 * * * *", handShakeWithOverDueThomas)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -78,7 +88,7 @@ func (s *scheduler) initOnce() error {
 }
 
 func (s *scheduler) AddJob(job *sodor.Job) error {
-	gobase.True(job.ScheduleMode == sodor.ScheduleMode_SM_Crontab)
+	gobase.True(job.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab)
 
 	ctx := newJobContext()
 	err := ctx.setJob(job)

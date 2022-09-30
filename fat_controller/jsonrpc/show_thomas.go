@@ -7,7 +7,7 @@ import (
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) DropThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) (*sodor.ThomasReply, *httpapi.JsonRpcError) {
+func (s *Service) ShowThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) (*sodor.ThomasInstance, *httpapi.JsonRpcError) {
 	if params.Id == 0 {
 		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
 			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("invalid params of thomas"))
@@ -23,9 +23,11 @@ func (s *Service) DropThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) 
 			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("thomas not exist"))
 	}
 
-	if err = metastore.GetInstance().DropThomas(params); err != nil {
+	var out sodor.ThomasInstance
+	if err = metastore.GetInstance().ShowThomas(params, &out); err != nil {
 		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
 	}
-	ctx.ToLog("DropThomas Done: %+v", params)
-	return &sodor.ThomasReply{Id: params.Id}, nil
+
+	ctx.ToLog("ShowThomas Done: %+v", params)
+	return &out, nil
 }

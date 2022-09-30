@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"sodor/fat_controller/config"
 	"strings"
 	"sync"
 )
@@ -23,13 +24,16 @@ type metaStore struct {
 var (
 	once      sync.Once
 	singleton *metaStore
-	URI       string
+)
+
+const (
+	maxThomasLife = 60
 )
 
 func GetInstance() *metaStore {
 	once.Do(func() {
 		singleton = &metaStore{}
-		err := singleton.initOnce(URI)
+		err := singleton.initOnce(config.GetInstance().MetaStoreUri)
 		if err != nil {
 			log.Fatalf("metastore init failed. err=%s", err)
 		}

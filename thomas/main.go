@@ -87,7 +87,7 @@ func runApp(ctx *cli.Context) error {
 	}
 
 	server = gorpc.NewServer(httpcfg.DefaultOption)
-	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, &grpc.Service{})
+	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, grpc.NewService())
 
 	return server.Run(gorpc.ServerOption{
 		Addr:        ctx.String(listenAddr.Name),

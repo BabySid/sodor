@@ -1,75 +1,75 @@
-package main
+package config
 
 import (
 	"github.com/urfave/cli/v2"
 	"sodor/base"
-	"sodor/fat_controller/metastore"
 )
 
 var (
-	listenAddr = &cli.StringFlag{
+	ListenAddr = &cli.StringFlag{
 		Name:        "listen_addr",
 		Usage:       "Set the listen address",
 		DefaultText: ":9527",
 		Value:       ":9527",
 	}
 
-	metaStore = &cli.StringFlag{
+	MetaStore = &cli.StringFlag{
 		Name:        "metastore.addr",
 		Usage:       "Set the metastore address",
 		Required:    true,
-		Destination: &metastore.URI,
+		DefaultText: "mysql://$user:$passwd@tcp($host:$port)/$db?charset=utf8mb4&parseTime=True&loc=Local",
+		Value:       "",
 	}
 
-	initMetaStore = &cli.BoolFlag{
+	InitMetaStore = &cli.BoolFlag{
 		Name:        "init_metastore",
 		Usage:       "Init the metastore database. e.g. initialize the tables. this flag is used for one-time operation",
 		DefaultText: "false",
 		Value:       false,
 	}
 
-	logLevel = &cli.StringFlag{
+	LogLevel = &cli.StringFlag{
 		Name:        "log.level",
 		Usage:       "Set the log level",
 		DefaultText: "info",
 		Value:       "info",
 	}
 
-	logPath = &cli.StringFlag{
+	LogPath = &cli.StringFlag{
 		Name:        "log.path",
 		Usage:       "Set the path for writing the log",
 		DefaultText: ".",
 		Value:       "./",
 	}
 
-	logMaxAge = &cli.IntFlag{
+	LogMaxAge = &cli.IntFlag{
 		Name:        "log.max_age",
 		Usage:       "Set the max age for the log file ",
 		DefaultText: "24*7 hours",
 		Value:       24 * 7,
 	}
 
-	debugMode = &cli.BoolFlag{
+	DebugMode = &cli.BoolFlag{
 		Name:        "debug",
 		Usage:       "Set the debug mode",
 		DefaultText: "false",
 		Value:       false,
 	}
 
-	globalFlags = []cli.Flag{
-		listenAddr,
-		metaStore,
-		initMetaStore,
-		logLevel,
-		logPath,
-		logMaxAge,
-		debugMode,
+	GlobalFlags = []cli.Flag{
+		ListenAddr,
+		MetaStore,
+		InitMetaStore,
+		LogLevel,
+		LogPath,
+		LogMaxAge,
+		DebugMode,
 	}
 
-	appHelpFlagGroups = []base.FlagGroup{
+	AppHelpFlagGroups = []base.FlagGroup{
 		{
 			Name:  "GLOBAL",
-			Flags: globalFlags,
+			Flags: GlobalFlags,
 		},
 	}
 )

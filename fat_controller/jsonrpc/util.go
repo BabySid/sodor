@@ -27,7 +27,7 @@ func checkTaskValid(job *sodor.Job, create bool) error {
 		return errors.New("job.name is empty")
 	}
 
-	if job.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+	if job.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {
 		if job.GetRoutineSpec() == nil || job.GetRoutineSpec().CtSpec == "" {
 			return fmt.Errorf("task.spec must be set")
 		}

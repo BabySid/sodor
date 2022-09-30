@@ -29,7 +29,7 @@ func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
 	}
 
-	if params.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+	if params.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {
 		err = scheduler.GetInstance().AddJob(params)
 		gobase.True(err == nil)
 	}

@@ -23,6 +23,7 @@ func init() {
 		&JobInstance{},
 		&TaskInstance{},
 		&Thomas{},
+		&ThomasInstance{},
 	}
 }
 
@@ -119,10 +120,22 @@ type Thomas struct {
 	Port          int                    `gorm:"not null;uniqueIndex:uniq_thomas"`
 	PID           int                    `gorm:"not null;column:pid"`
 	StartTime     int32                  `gorm:"not null"`
-	HeartBeatTime int32                  `gorm:"not null"`
+	HeartBeatTime int32                  `gorm:"not null;column:heart_beat_time"`
+	ThomasType    string                 `gorm:"not null;default:'';size:32"`
+	Status        string                 `gorm:"not null;default:'';size:64"`
 	Metrics       map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
+}
+
+type ThomasInstance struct {
+	TableModel
+	ThomasID int32                  `gorm:"not null"`
+	Metrics  map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
 }
 
 func (t Thomas) TableName() string {
 	return "thomas"
+}
+
+func (t Thomas) UpdateFields() []string {
+	return []string{"Name", "Version", "Proto", "Host", "Port", "PID", "StartTime", "HeartBeatTime", "Metrics"}
 }

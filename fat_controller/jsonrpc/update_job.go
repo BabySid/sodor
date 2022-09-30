@@ -32,7 +32,7 @@ func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 	err = scheduler.GetInstance().Remove(params)
 	gobase.True(err == nil)
 
-	if params.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+	if params.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {
 		err = scheduler.GetInstance().AddJob(params)
 		gobase.True(err == nil)
 	}

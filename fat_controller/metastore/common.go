@@ -40,7 +40,7 @@ func fromJob(in *Job, out *sodor.Job) error {
 
 	out.ScheduleMode = sodor.ScheduleMode(sodor.ScheduleMode_value[in.SchedulerMode])
 
-	if out.ScheduleMode == sodor.ScheduleMode_SM_Crontab {
+	if out.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {
 		var spec sodor.RoutineSpec
 		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.RoutineSpec), &spec)
 		if err != nil {
@@ -97,7 +97,7 @@ func fromTask(in *Task, out *sodor.Task) error {
 	return nil
 }
 
-func fromThomas(in *Thomas, out *sodor.ThomasInstance) error {
+func fromThomas(in *Thomas, out *sodor.ThomasInfo) error {
 	out.Id = int32(in.ID)
 	out.CreateAt = int32(in.CreatedAt.Unix())
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
@@ -109,6 +109,20 @@ func fromThomas(in *Thomas, out *sodor.ThomasInstance) error {
 	out.Pid = int32(in.PID)
 	out.StartTime = in.StartTime
 	out.HeartBeatTime = in.HeartBeatTime
+	out.ThomasType = sodor.ThomasType(sodor.TaskType_value[in.ThomasType])
+	out.Status = in.Status
+	metrics, err := structpb.NewStruct(in.Metrics)
+	if err != nil {
+		return err
+	}
+	out.LatestMetrics = metrics
+	return nil
+}
+
+func fromThomasMetrics(in *ThomasInstance, out *sodor.ThomasMetrics) error {
+	out.Id = int32(in.ID)
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
 	metrics, err := structpb.NewStruct(in.Metrics)
 	if err != nil {
 		return err
@@ -117,7 +131,7 @@ func fromThomas(in *Thomas, out *sodor.ThomasInstance) error {
 	return nil
 }
 
-func toThomas(in *sodor.ThomasInstance, out *Thomas) error {
+func toThomas(in *sodor.ThomasInfo, out *Thomas) error {
 	if in.Id > 0 {
 		out.ID = uint(in.Id)
 	}
@@ -130,18 +144,17 @@ func toThomas(in *sodor.ThomasInstance, out *Thomas) error {
 	out.PID = int(in.Pid)
 	out.StartTime = in.StartTime
 	out.HeartBeatTime = int32(time.Now().Unix())
-	out.Metrics = in.Metrics.AsMap()
+	out.ThomasType = in.ThomasType.String()
+	out.Status = in.Status
+	out.Metrics = in.LatestMetrics.AsMap()
 
 	return nil
 }
 
-func toSimpleThomas(in *sodor.ThomasInstance, out *Thomas) error {
-	if in.Id > 0 {
-		out.ID = uint(in.Id)
-	} else {
-		out.Host = in.Host
-		out.Port = int(in.Port)
-	}
+func toSimpleThomas(in *sodor.ThomasInfo, out *Thomas) error {
+	out.Host = in.Host
+	out.Port = int(in.Port)
+	out.ThomasType = in.ThomasType.String()
 
 	return nil
 }

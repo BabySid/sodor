@@ -13,9 +13,11 @@ import (
 	"os"
 	"path/filepath"
 	"sodor/base"
+	"sodor/fat_controller/config"
 	"sodor/fat_controller/grpc"
 	"sodor/fat_controller/jsonrpc"
 	"sodor/fat_controller/metastore"
+	"sodor/fat_controller/scheduler"
 	"sort"
 	"syscall"
 )
@@ -49,7 +51,7 @@ func NewApp() *cli.App {
 
 	app.Action = runApp
 
-	app.Flags = globalFlags
+	app.Flags = config.GlobalFlags
 	app.Commands = []*cli.Command{}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
@@ -60,7 +62,7 @@ func NewApp() *cli.App {
 	cli.HelpPrinter = func(w io.Writer, tmpl string, data interface{}) {
 		originalHelpPrinter(w, tmpl, base.HelpData{
 			App:        data,
-			FlagGroups: appHelpFlagGroups,
+			FlagGroups: config.AppHelpFlagGroups,
 		})
 	}
 
@@ -72,12 +74,12 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
-	err := initComponent()
+	err := initComponent(ctx)
 	if err != nil {
 		return err
 	}
 
-	if ctx.Bool(initMetaStore.Name) {
+	if ctx.Bool(config.InitMetaStore.Name) {
 		initializeMetaStore()
 		return nil
 	}
@@ -87,18 +89,18 @@ func runApp(ctx *cli.Context) error {
 	_ = server.RegisterGrpc(&sodor.FatController_ServiceDesc, &grpc.Service{})
 
 	var rotator *logOption.Rotator
-	if !ctx.Bool(debugMode.Name) {
+	if !ctx.Bool(config.DebugMode.Name) {
 		rotator = &logOption.Rotator{
-			LogMaxAge: ctx.Int(logMaxAge.Name),
-			LogPath:   ctx.String(logPath.Name),
+			LogMaxAge: ctx.Int(config.LogMaxAge.Name),
+			LogPath:   ctx.String(config.LogPath.Name),
 		}
 	}
 
 	return server.Run(gorpc.ServerOption{
-		Addr:        ctx.String(listenAddr.Name),
+		Addr:        ctx.String(config.ListenAddr.Name),
 		ClusterName: "fat_ctrl",
 		Rotator:     rotator,
-		LogLevel:    ctx.String(logLevel.Name),
+		LogLevel:    ctx.String(config.LogLevel.Name),
 	})
 }
 
@@ -116,7 +118,19 @@ func initializeMetaStore() {
 	}
 }
 
-func initComponent() error {
+func initComponent(ctx *cli.Context) error {
+	err := config.GetInstance().InitFromFlags(ctx)
+	if err != nil {
+		log.Fatalf("config init failed. err=%s", err)
+	}
+	config.GetInstance().AppName = AppName
+	config.GetInstance().AppVersion = AppVersion
+
 	_ = metastore.GetInstance()
+
+	err = scheduler.GetInstance().Start()
+	if err != nil {
+		log.Fatalf("scheduler init failed. err=%s", err)
+	}
 	return nil
 }

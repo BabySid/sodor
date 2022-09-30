@@ -1,12 +1,13 @@
 package metastore
 
 import (
+	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"gorm.io/gorm"
 	"time"
 )
 
-func (ms *metaStore) UpsertThomas(req *sodor.ThomasInstance) error {
+func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 	var thomas Thomas
 	_ = toThomas(req, &thomas)
 
@@ -19,16 +20,27 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInstance) error {
 	}
 
 	if thomas.ID > 0 {
-		if rs := ms.db.Save([]*Thomas{&thomas}); rs.Error != nil {
+		if rs := ms.db.Model(&thomas).Select(thomas.UpdateFields()).Updates(thomas); rs.Error != nil {
 			return rs.Error
 		}
 	} else {
+		thomas.ThomasType = sodor.ThomasType_Thomas_Dynamic.String()
 		if rs := ms.db.Create(&thomas); rs.Error != nil {
 			return rs.Error
 		}
-
-		req.Id = int32(thomas.ID)
 	}
+	req.Id = int32(thomas.ID)
+	return nil
+}
+
+func (ms *metaStore) UpdateThomasStatus(id int32, status string) error {
+	var thomas Thomas
+	thomas.ID = uint(id)
+
+	if rs := ms.db.Model(&thomas).Updates(Thomas{Status: status}); rs.Error != nil {
+		return rs.Error
+	}
+
 	return nil
 }
 
@@ -87,13 +99,13 @@ func (ms *metaStore) ThomasExistByID(id int32) (bool, error) {
 	return false, nil
 }
 
-func (ms *metaStore) AddThomas(thomas *sodor.ThomasInstance) error {
+func (ms *metaStore) AddThomas(thomas *sodor.ThomasInfo) error {
 	var out Thomas
 	if err := toSimpleThomas(thomas, &out); err != nil {
 		return err
 	}
 
-	rs := ms.db.Create(&thomas)
+	rs := ms.db.Create(&out)
 	if rs.Error != nil {
 		return rs.Error
 	}
@@ -103,18 +115,59 @@ func (ms *metaStore) AddThomas(thomas *sodor.ThomasInstance) error {
 	return nil
 }
 
-func (ms *metaStore) DropThomas(thomas *sodor.ThomasInstance) error {
-	var out Thomas
-	if err := toSimpleThomas(thomas, &out); err != nil {
-		return err
-	}
+func (ms *metaStore) ShowThomas(in *sodor.ThomasInfo, out *sodor.ThomasInstance) error {
+	gobase.True(in.Id > 0)
 
-	rs := ms.db.Delete(&thomas)
+	var thomas Thomas
+	rs := ms.db.Take(&thomas, in.Id)
 	if rs.Error != nil {
 		return rs.Error
 	}
 
+	if rs.RowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	out.Thomas = &sodor.ThomasInfo{}
+	if err := fromThomas(&thomas, out.Thomas); err != nil {
+		return err
+	}
+
+	var ins []*ThomasInstance
+	if rs = ms.db.Where(&ThomasInstance{ThomasID: in.Id}).Find(&ins); rs.Error != nil {
+		return rs.Error
+	}
+
+	out.Metrics = make([]*sodor.ThomasMetrics, len(ins))
+	for i, t := range ins {
+		var metrics sodor.ThomasMetrics
+		if err := fromThomasMetrics(t, &metrics); err != nil {
+			return err
+		}
+		out.Metrics[i] = &metrics
+	}
 	return nil
+}
+
+func (ms *metaStore) DropThomas(thomas *sodor.ThomasInfo) error {
+	gobase.True(thomas.Id > 0)
+
+	err := ms.db.Transaction(func(tx *gorm.DB) error {
+		var t Thomas
+		t.ID = uint(thomas.Id)
+
+		if rs := tx.Delete(&t); rs.Error != nil {
+			return rs.Error
+		}
+
+		if rs := tx.Where("thomas_id = ?", t.ID).Delete(&ThomasInstance{}); rs.Error != nil {
+			return rs.Error
+		}
+
+		return nil
+	})
+
+	return err
 }
 
 func (ms *metaStore) SelectValidThomas(host string) (*Thomas, error) {
@@ -128,28 +181,39 @@ func (ms *metaStore) SelectValidThomas(host string) (*Thomas, error) {
 }
 
 func filterValidThomas(db *gorm.DB) *gorm.DB {
-	const MaxThomasLife = 300
-	return db.Where("heart_beat_time >= ?", time.Now().Unix()-MaxThomasLife)
+	return db.Where("heart_beat_time >= ?", time.Now().Unix()-maxThomasLife)
 }
 
-func (ms *metaStore) ListAllThomas() (*sodor.ThomasInstances, error) {
+func (ms *metaStore) SelectInvalidThomas() ([]Thomas, error) {
+	var thomas []Thomas
+	if rs := ms.db.Scopes(filterInvalidThomas).Find(&thomas); rs.Error != nil {
+		return nil, rs.Error
+	}
+	return thomas, nil
+}
+
+func filterInvalidThomas(db *gorm.DB) *gorm.DB {
+	return db.Where("heart_beat_time < ?", time.Now().Unix()-maxThomasLife)
+}
+
+func (ms *metaStore) ListAllThomas() (*sodor.ThomasInfos, error) {
 	var thomas []Thomas
 
 	if rs := ms.db.Find(&thomas); rs.Error != nil {
 		return nil, rs.Error
 	}
 
-	var all sodor.ThomasInstances
-	all.ThomasInstances = make([]*sodor.ThomasInstance, len(thomas))
+	var all sodor.ThomasInfos
+	all.ThomasInfos = make([]*sodor.ThomasInfo, len(thomas))
 
 	for i, t := range thomas {
-		var ti sodor.ThomasInstance
+		var ti sodor.ThomasInfo
 		err := fromThomas(&t, &ti)
 		if err != nil {
 			return nil, err
 		}
 
-		all.ThomasInstances[i] = &ti
+		all.ThomasInfos[i] = &ti
 	}
 
 	return nil, nil
