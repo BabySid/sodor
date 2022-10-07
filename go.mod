@@ -3,13 +3,15 @@ module sodor
 go 1.17
 
 require (
-	github.com/BabySid/gobase v0.0.0-20220926033815-e2c24714c27f
+	github.com/BabySid/gobase v0.0.0-20221003042940-16f51a8c3b59
 	github.com/BabySid/gorpc v0.0.0-20220927085112-f00d29f34214
 	github.com/BabySid/proto v0.0.0-20220930082836-e4ffe80c29ca
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.10.1
 	gonum.org/v1/gonum v0.12.0
+	google.golang.org/grpc v1.49.0
+	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/gorm v1.23.9
 )
@@ -64,7 +66,5 @@ require (
 	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220920201722-2b89144ce006 // indirect
-	google.golang.org/grpc v1.49.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

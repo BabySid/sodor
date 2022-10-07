@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"github.com/urfave/cli/v2"
@@ -6,60 +6,60 @@ import (
 )
 
 var (
-	listenAddr = &cli.StringFlag{
+	ListenAddr = &cli.StringFlag{
 		Name:        "listen_addr",
 		Usage:       "Set the listen address",
 		DefaultText: ":9528",
 		Value:       ":9528",
 	}
 
-	logLevel = &cli.StringFlag{
+	LogLevel = &cli.StringFlag{
 		Name:        "log.level",
 		Usage:       "Set the log level",
 		DefaultText: "info",
 		Value:       "info",
 	}
 
-	logPath = &cli.StringFlag{
+	LogPath = &cli.StringFlag{
 		Name:        "log.path",
 		Usage:       "Set the path for writing the log",
 		DefaultText: ".",
 		Value:       "./",
 	}
 
-	logMaxAge = &cli.IntFlag{
+	LogMaxAge = &cli.IntFlag{
 		Name:        "log.max_age",
 		Usage:       "Set the max age for the log file ",
 		DefaultText: "24*7 hours",
 		Value:       24 * 7,
 	}
 
-	debugMode = &cli.BoolFlag{
+	DebugMode = &cli.BoolFlag{
 		Name:        "debug",
 		Usage:       "Set the debug mode",
 		DefaultText: "false",
 		Value:       false,
 	}
 
-	standalone = &cli.BoolFlag{
-		Name:  "standalone",
-		Usage: "Run as a standalone process, DO NOT interact with fat_controller",
+	TaskRunner = &cli.BoolFlag{
+		Name:  "task_runner",
+		Usage: "Run as a task_runner process, DO NOT interact with fat_controller",
 		Value: false,
 	}
 
-	globalFlags = []cli.Flag{
-		listenAddr,
-		standalone,
-		logLevel,
-		logPath,
-		logMaxAge,
-		debugMode,
+	GlobalFlags = []cli.Flag{
+		ListenAddr,
+		TaskRunner,
+		LogLevel,
+		LogPath,
+		LogMaxAge,
+		DebugMode,
 	}
 
-	appHelpFlagGroups = []base.FlagGroup{
+	AppHelpFlagGroups = []base.FlagGroup{
 		{
 			Name:  "GLOBAL",
-			Flags: globalFlags,
+			Flags: GlobalFlags,
 		},
 	}
 )

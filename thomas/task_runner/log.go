@@ -1,4 +1,4 @@
-package standalone
+package task_runner
 
 import (
 	"log"

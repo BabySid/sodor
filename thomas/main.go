@@ -13,8 +13,9 @@ import (
 	"os"
 	"path/filepath"
 	"sodor/base"
+	"sodor/thomas/config"
 	"sodor/thomas/grpc"
-	"sodor/thomas/task"
+	"sodor/thomas/routine"
 	"sort"
 	"syscall"
 )
@@ -48,10 +49,7 @@ func NewApp() *cli.App {
 
 	app.Action = runApp
 
-	app.Flags = globalFlags
-	app.Commands = []*cli.Command{
-		task.ShellCommand,
-	}
+	app.Flags = config.GlobalFlags
 
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
@@ -61,7 +59,7 @@ func NewApp() *cli.App {
 	cli.HelpPrinter = func(w io.Writer, tmpl string, data interface{}) {
 		originalHelpPrinter(w, tmpl, base.HelpData{
 			App:        data,
-			FlagGroups: appHelpFlagGroups,
+			FlagGroups: config.AppHelpFlagGroups,
 		})
 	}
 
@@ -73,28 +71,49 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
-	if ctx.Bool(standalone.Name) {
-		runStandalone(ctx)
+	err := initComponent(ctx)
+	if err != nil {
+		return err
+	}
+
+	if ctx.Bool(config.TaskRunner.Name) {
+		runTaskRunner(ctx)
 		return nil
 	}
 
 	var rotator *logOption.Rotator
-	if !ctx.Bool(debugMode.Name) {
+	if !ctx.Bool(config.DebugMode.Name) {
 		rotator = &logOption.Rotator{
-			LogMaxAge: ctx.Int(logMaxAge.Name),
-			LogPath:   ctx.String(logPath.Name),
+			LogMaxAge: ctx.Int(config.LogMaxAge.Name),
+			LogPath:   ctx.String(config.LogPath.Name),
 		}
 	}
 
 	server = gorpc.NewServer(httpcfg.DefaultOption)
-	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, grpc.NewService())
+	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, &grpc.Service{})
 
 	return server.Run(gorpc.ServerOption{
-		Addr:        ctx.String(listenAddr.Name),
+		Addr:        ctx.String(config.ListenAddr.Name),
 		ClusterName: "thomas",
 		Rotator:     rotator,
-		LogLevel:    ctx.String(logLevel.Name),
+		LogLevel:    ctx.String(config.LogLevel.Name),
 	})
+}
+
+func initComponent(ctx *cli.Context) error {
+	err := config.GetInstance().InitFromFlags(ctx)
+	if err != nil {
+		log.Fatalf("config init failed. err=%s", err)
+	}
+	config.GetInstance().AppName = AppName
+	config.GetInstance().AppVersion = AppVersion
+
+	err = routine.GetInstance().Start()
+	if err != nil {
+		log.Fatalf("routine start failed. err=%s", err)
+	}
+
+	return nil
 }
 
 func exit(sig os.Signal) {
@@ -103,6 +122,6 @@ func exit(sig os.Signal) {
 	os.Exit(0)
 }
 
-func runStandalone(ctx *cli.Context) {
+func runTaskRunner(ctx *cli.Context) {
 
 }
