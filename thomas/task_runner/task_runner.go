@@ -11,7 +11,7 @@ import (
 )
 
 type Task interface {
-	Run()
+	Run() error
 }
 
 func GetRunner() Task {

@@ -125,5 +125,7 @@ func exit(sig os.Signal) {
 
 func runTaskRunner(ctx *cli.Context) {
 	t := task_runner.GetRunner()
-	t.Run()
+	if err := t.Run(); err != nil {
+		log.Fatalf("task_runner run failed. err = %s", err.Error())
+	}
 }

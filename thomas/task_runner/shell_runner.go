@@ -14,9 +14,14 @@ type ShellRunner struct {
 	outputVars map[string]interface{}
 }
 
-func (s *ShellRunner) Run() {
+func (s *ShellRunner) Run() error {
 	s.TaskRunner = NewTaskRunner()
 	s.outputVars = make(map[string]interface{})
+
+	if err := s.SetUp(); err != nil {
+		Warn.Printf("task SetUp failed. err = %s", err.Error())
+		return err
+	}
 
 	Info.Printf("task(%d-%d-%s) begin to run", s.request.JobId, s.request.TaskId, s.request.Task.Name)
 
@@ -29,16 +34,11 @@ func (s *ShellRunner) Run() {
 		}
 	}()
 
-	if err := s.SetUp(); err != nil {
-		Warn.Printf("task(%d-%d-%s) SetUp failed. err = %s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
-		return
-	}
-
 	req, err := regexp.Compile("[\\$#]\\{setValue\\(([^)]*)\\)}")
 	if err != nil {
 		Warn.Printf("task(%d-%d-%s) regexp.Compile failed. err = %s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
 		s.response.ExitMsg = err.Error()
-		return
+		return err
 	}
 	s.req = req
 
@@ -56,7 +56,7 @@ func (s *ShellRunner) Run() {
 	if err != nil {
 		Warn.Printf("task(%d-%d-%s) structpb.NewStruct(%+v) failed. err = %s",
 			s.request.JobId, s.request.TaskId, s.request.Task.Name, s.outputVars, err.Error())
-		return
+		return err
 	}
 	s.response.OutputVars = vars
 
@@ -65,6 +65,8 @@ func (s *ShellRunner) Run() {
 	if status.Error != nil {
 		s.response.ExitMsg = status.Error.Error()
 	}
+
+	return nil
 }
 
 func (s *ShellRunner) findOutputValue(line string) map[string]interface{} {
