@@ -13,6 +13,13 @@ var (
 		Value:       ":9528",
 	}
 
+	DataPath = &cli.StringFlag{
+		Name:        "log.path",
+		Usage:       "Set the path for the context of tasks. e.g. the task log, response and so on",
+		DefaultText: ".",
+		Value:       "./",
+	}
+
 	LogLevel = &cli.StringFlag{
 		Name:        "log.level",
 		Usage:       "Set the log level",
@@ -50,6 +57,7 @@ var (
 	GlobalFlags = []cli.Flag{
 		ListenAddr,
 		TaskRunner,
+		DataPath,
 		LogLevel,
 		LogPath,
 		LogMaxAge,
