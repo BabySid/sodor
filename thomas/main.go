@@ -77,7 +77,7 @@ func runApp(ctx *cli.Context) error {
 		return err
 	}
 
-	if ctx.Bool(config.TaskRunner.Name) {
+	if ctx.Bool(config.RunTask.Name) {
 		runTaskRunner(ctx)
 		return nil
 	}
@@ -106,7 +106,8 @@ func initComponent(ctx *cli.Context) error {
 	config.GetInstance().AppName = AppName
 	config.GetInstance().AppVersion = AppVersion
 
-	if ctx.Bool(config.TaskRunner.Name) {
+	if ctx.Bool(config.RunTask.Name) {
+		config.GetInstance().TaskIdentity = ctx.String(config.TaskIdentity.Name)
 		return nil
 	}
 

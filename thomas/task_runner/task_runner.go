@@ -6,8 +6,8 @@ import (
 	"github.com/BabySid/proto/sodor"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"sodor/base"
+	"sodor/thomas/config"
 	"time"
 )
 
@@ -37,12 +37,8 @@ func NewTaskRunner() *TaskRunner {
 	return &TaskRunner{}
 }
 
-func (r *TaskRunner) SetUp(ins interface{}) error {
-	prefix := reflect.TypeOf(ins).Name()
-	if reflect.TypeOf(ins).Kind() == reflect.Ptr {
-		prefix = reflect.TypeOf(ins).Elem().Name()
-	}
-	prefix = "[" + prefix + "] "
+func (r *TaskRunner) SetUp() error {
+	prefix := "[" + config.GetInstance().TaskIdentity + "] "
 	Info.SetPrefix(prefix)
 	Warn.SetPrefix(prefix)
 

@@ -12,8 +12,9 @@ type config struct {
 	LocalIP string
 	Port    int
 
-	AppName    string
-	AppVersion string
+	TaskIdentity string
+	AppName      string
+	AppVersion   string
 }
 
 var (

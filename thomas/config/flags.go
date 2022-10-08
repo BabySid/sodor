@@ -48,15 +48,23 @@ var (
 		Value:       false,
 	}
 
-	TaskRunner = &cli.BoolFlag{
-		Name:  "task_runner",
-		Usage: "Run as a task_runner process, DO NOT interact with fat_controller",
+	RunTask = &cli.BoolFlag{
+		Name:  "run_task",
+		Usage: "Run as a task_runner process. DO NOT interact with fat_controller",
 		Value: false,
+	}
+
+	TaskIdentity = &cli.StringFlag{
+		Name:        "task.identity",
+		Usage:       "Set the identity for running task. e.g. log prefix",
+		DefaultText: "RunTask",
+		Value:       "RunTask",
 	}
 
 	GlobalFlags = []cli.Flag{
 		ListenAddr,
-		TaskRunner,
+		RunTask,
+		TaskIdentity,
 		DataPath,
 		LogLevel,
 		LogPath,
