@@ -34,7 +34,8 @@ func (s *ShellRunner) Run() error {
 		}
 	}()
 
-	req, err := regexp.Compile("[\\$#]\\{setValue\\(([^)]*)\\)}")
+	// [\\$#]\\{set_value\\(([^)]*)\\)}
+	req, err := regexp.Compile("set_value\\(([^)]*)\\)")
 	if err != nil {
 		Warn.Printf("task(%d-%d-%s) regexp.Compile failed. err = %s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
 		s.response.ExitMsg = err.Error()
@@ -72,10 +73,10 @@ func (s *ShellRunner) Run() error {
 func (s *ShellRunner) findOutputValue(line string) map[string]interface{} {
 	ls := s.req.FindStringSubmatch(line)
 	if len(ls) > 1 {
-		rs := strings.Split(ls[1], "=")
-		if len(rs) == 2 {
-			key := strings.TrimSpace(rs[0])
-			value := strings.TrimSpace(rs[1])
+		idx := strings.Index(ls[1], "=")
+		if idx > 0 {
+			key := strings.TrimSpace(ls[1][:idx])
+			value := strings.TrimSpace(ls[1][idx+1:])
 			return map[string]interface{}{key: value}
 		}
 	}
