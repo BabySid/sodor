@@ -16,6 +16,7 @@ import (
 	"sodor/thomas/config"
 	"sodor/thomas/grpc"
 	"sodor/thomas/routine"
+	"sodor/thomas/task_runner"
 	"sort"
 	"syscall"
 )
@@ -123,5 +124,6 @@ func exit(sig os.Signal) {
 }
 
 func runTaskRunner(ctx *cli.Context) {
-
+	t := task_runner.GetRunner()
+	t.Run()
 }

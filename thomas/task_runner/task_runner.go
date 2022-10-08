@@ -14,13 +14,8 @@ type Task interface {
 	Run()
 }
 
-func GetRunner(typ sodor.TaskType) Task {
-	if typ == sodor.TaskType_TaskType_Shell {
-		return &ShellRunner{}
-	}
-
-	gobase.AssertHere()
-	return nil
+func GetRunner() Task {
+	return &ShellRunner{}
 }
 
 type TaskRunner struct {
@@ -32,6 +27,9 @@ const (
 	requestFile  = "./task_request.json"
 	responseFile = "./task_response.json"
 	defaultPerm  = 666
+
+	OKMsg       = "OK"
+	SystemError = 999
 )
 
 func NewTaskRunner() *TaskRunner {
@@ -74,6 +72,17 @@ func (r *TaskRunner) SetUp() error {
 	return nil
 }
 
-func (r *TaskRunner) run() {
+func (r *TaskRunner) TearDown() error {
+	r.response.StopTs = int32(time.Now().Unix())
 
+	respByte, err := codec.DefaultProtoMarshal.Marshal(r.response)
+	if err != nil {
+		return err
+	}
+
+	err = gobase.WriteFile(responseFile, respByte, defaultPerm)
+	if err != nil {
+		return err
+	}
+	return nil
 }
