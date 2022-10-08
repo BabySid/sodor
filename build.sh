@@ -45,14 +45,14 @@ function build_fat_ctrl() {
     echo "########## build ${AppName} ##########"
 
     AppVersion="${AppName}"_$(date "+%F %T" | awk '{print $1"_"$2}')
-    go build -ldflags "-X 'main.AppVersion=${AppVersion}'" -o ${AppName} ./fat_controller
+    go build -ldflags "-X 'main.AppVersion=${AppVersion}'" -o ${AppName}.out ./fat_controller
 
     if [[ $? != 0 ]];then
         echo "compile ${AppName} failed"
         return ${FAIL}
     fi
 
-    mv ${AppName} output/bin
+    mv ${AppName}.out output/bin/${AppName}
 }
 
 function build_thomas() {
@@ -60,14 +60,14 @@ function build_thomas() {
     echo "########## build ${AppName} ##########"
 
     AppVersion="${AppName}"_$(date "+%F %T" | awk '{print $1"_"$2}')
-    go build -ldflags "-X 'main.AppVersion=${AppVersion}'" -o ${AppName} ./thomas
+    go build -ldflags "-X 'main.AppVersion=${AppVersion}'" -o ${AppName}.out ./thomas
 
     if [[ $? != 0 ]];then
         echo "compile ${AppName} failed"
         return ${FAIL}
     fi
 
-    mv ${AppName} output/bin
+    mv ${AppName}.out output/bin/${AppName}
 }
 
 function main() {
