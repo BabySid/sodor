@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/BabySid/gobase"
 	"github.com/urfave/cli/v2"
-	"sodor/base"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,12 +29,6 @@ func GetInstance() *config {
 }
 
 func (c *config) InitFromFlags(ctx *cli.Context) error {
-	c.LocalIP = base.LocalHost
-
-	if ctx.Bool(TaskRunner.Name) {
-		return nil
-	}
-
 	addr := ctx.String(ListenAddr.Name)
 
 	arr := strings.Split(addr, ":")

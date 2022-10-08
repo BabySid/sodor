@@ -102,15 +102,19 @@ func runApp(ctx *cli.Context) error {
 }
 
 func initComponent(ctx *cli.Context) error {
-	err := config.GetInstance().InitFromFlags(ctx)
-	if err != nil {
-		log.Fatalf("config init failed. err=%s", err)
-	}
+	config.GetInstance().LocalIP = base.LocalHost
 	config.GetInstance().AppName = AppName
 	config.GetInstance().AppVersion = AppVersion
 
-	err = routine.GetInstance().Start()
-	if err != nil {
+	if ctx.Bool(config.TaskRunner.Name) {
+		return nil
+	}
+
+	if err := config.GetInstance().InitFromFlags(ctx); err != nil {
+		log.Fatalf("config init failed. err=%s", err)
+	}
+
+	if err := routine.GetInstance().Start(); err != nil {
 		log.Fatalf("routine start failed. err=%s", err)
 	}
 
