@@ -42,6 +42,7 @@ func (r *TaskRunner) SetUp(ins interface{}) error {
 	if reflect.TypeOf(ins).Kind() == reflect.Ptr {
 		prefix = reflect.TypeOf(ins).Elem().Name()
 	}
+	prefix = "[" + prefix + "] "
 	Info.SetPrefix(prefix)
 	Warn.SetPrefix(prefix)
 
