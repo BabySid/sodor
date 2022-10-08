@@ -14,7 +14,7 @@ var (
 	}
 
 	DataPath = &cli.StringFlag{
-		Name:        "log.path",
+		Name:        "data.path",
 		Usage:       "Set the path for the context of tasks. e.g. the task log, response and so on",
 		DefaultText: ".",
 		Value:       "./",
