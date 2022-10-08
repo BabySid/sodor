@@ -3,7 +3,7 @@ module sodor
 go 1.17
 
 require (
-	github.com/BabySid/gobase v0.0.0-20221008035416-a5f256d7137b
+	github.com/BabySid/gobase v0.0.0-20221003042940-16f51a8c3b59
 	github.com/BabySid/gorpc v0.0.0-20220927085112-f00d29f34214
 	github.com/BabySid/proto v0.0.0-20220930082836-e4ffe80c29ca
 	github.com/robfig/cron/v3 v3.0.1
