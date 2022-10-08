@@ -30,12 +30,17 @@ func GetInstance() *config {
 }
 
 func (c *config) InitFromFlags(ctx *cli.Context) error {
+	c.LocalIP = base.LocalHost
+
+	if ctx.Bool(TaskRunner.Name) {
+		return nil
+	}
+
 	addr := ctx.String(ListenAddr.Name)
 
 	arr := strings.Split(addr, ":")
 	gobase.TrueF(len(arr) >= 1, "%s format is '[$host]:$port'", ListenAddr.Name)
 
-	c.LocalIP = base.LocalHost
 	port, err := strconv.Atoi(arr[0])
 	gobase.TrueF(err == nil, "invalid port of %s", ListenAddr.Name)
 	c.Port = port
