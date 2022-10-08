@@ -6,6 +6,7 @@ import (
 	"github.com/BabySid/proto/sodor"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"sodor/base"
 	"time"
 )
@@ -36,7 +37,14 @@ func NewTaskRunner() *TaskRunner {
 	return &TaskRunner{}
 }
 
-func (r *TaskRunner) SetUp() error {
+func (r *TaskRunner) SetUp(ins interface{}) error {
+	prefix := reflect.TypeOf(ins).Name()
+	if reflect.TypeOf(ins).Kind() == reflect.Ptr {
+		prefix = reflect.TypeOf(ins).Elem().Name()
+	}
+	Info.SetPrefix(prefix)
+	Warn.SetPrefix(prefix)
+
 	reqBytes, err := ioutil.ReadFile(requestFile)
 	if err != nil {
 		return err

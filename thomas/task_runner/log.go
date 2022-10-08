@@ -11,6 +11,6 @@ var (
 )
 
 func init() {
-	Warn = log.New(os.Stderr, "[Job_Runner] ", log.Lshortfile)
-	Info = log.New(os.Stdout, "[Job_Runner] ", log.Lshortfile)
+	Warn = log.New(os.Stderr, "[Task_Runner] ", log.Lshortfile)
+	Info = log.New(os.Stdout, "[Task_Runner] ", log.Lshortfile)
 }

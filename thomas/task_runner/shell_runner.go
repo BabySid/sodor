@@ -18,7 +18,7 @@ func (s *ShellRunner) Run() error {
 	s.TaskRunner = NewTaskRunner()
 	s.outputVars = make(map[string]interface{})
 
-	if err := s.SetUp(); err != nil {
+	if err := s.SetUp(s); err != nil {
 		Warn.Printf("task SetUp failed. err = %s", err.Error())
 		return err
 	}
