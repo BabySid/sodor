@@ -21,13 +21,6 @@ var (
 		Value:       "",
 	}
 
-	InitMetaStore = &cli.BoolFlag{
-		Name:        "init_metastore",
-		Usage:       "Init the metastore database. e.g. initialize the tables. this flag is used for one-time operation",
-		DefaultText: "false",
-		Value:       false,
-	}
-
 	LogLevel = &cli.StringFlag{
 		Name:        "log.level",
 		Usage:       "Set the log level",
@@ -59,7 +52,6 @@ var (
 	GlobalFlags = []cli.Flag{
 		ListenAddr,
 		MetaStore,
-		InitMetaStore,
 		LogLevel,
 		LogPath,
 		LogMaxAge,

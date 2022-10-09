@@ -16,7 +16,6 @@ import (
 	"sodor/thomas/config"
 	"sodor/thomas/grpc"
 	"sodor/thomas/routine"
-	"sodor/thomas/task_runner"
 	"sort"
 	"syscall"
 )
@@ -51,6 +50,9 @@ func NewApp() *cli.App {
 	app.Action = runApp
 
 	app.Flags = config.GlobalFlags
+	app.Commands = []*cli.Command{
+		&runTask,
+	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
@@ -77,11 +79,6 @@ func runApp(ctx *cli.Context) error {
 		return err
 	}
 
-	if ctx.Bool(config.RunTask.Name) {
-		runTaskRunner(ctx)
-		return nil
-	}
-
 	var rotator *logOption.Rotator
 	if !ctx.Bool(config.DebugMode.Name) {
 		rotator = &logOption.Rotator{
@@ -101,16 +98,13 @@ func runApp(ctx *cli.Context) error {
 	})
 }
 
-func initComponent(ctx *cli.Context) error {
+func init() {
 	config.GetInstance().LocalIP = base.LocalHost
 	config.GetInstance().AppName = AppName
 	config.GetInstance().AppVersion = AppVersion
+}
 
-	if ctx.Bool(config.RunTask.Name) {
-		config.GetInstance().TaskIdentity = ctx.String(config.TaskIdentity.Name)
-		return nil
-	}
-
+func initComponent(ctx *cli.Context) error {
 	if err := config.GetInstance().InitFromFlags(ctx); err != nil {
 		log.Fatalf("config init failed. err=%s", err)
 	}
@@ -126,11 +120,4 @@ func exit(sig os.Signal) {
 	log.Infof("%s exit by recving the signal %v", AppName, sig)
 	_ = server.Stop()
 	os.Exit(0)
-}
-
-func runTaskRunner(ctx *cli.Context) {
-	t := task_runner.GetRunner()
-	if err := t.Run(); err != nil {
-		log.Fatalf("task_runner run failed. err = %s", err.Error())
-	}
 }

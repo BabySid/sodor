@@ -52,7 +52,9 @@ func NewApp() *cli.App {
 	app.Action = runApp
 
 	app.Flags = config.GlobalFlags
-	app.Commands = []*cli.Command{}
+	app.Commands = []*cli.Command{
+		&initMetaStore,
+	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
@@ -79,11 +81,6 @@ func runApp(ctx *cli.Context) error {
 		return err
 	}
 
-	if ctx.Bool(config.InitMetaStore.Name) {
-		initializeMetaStore()
-		return nil
-	}
-
 	server = gorpc.NewServer(httpcfg.ServerOption{Codec: httpcfg.ProtobufCodec})
 	_ = server.RegisterJsonRPC("rpc", &jsonrpc.Service{})
 	_ = server.RegisterGrpc(&sodor.FatController_ServiceDesc, &grpc.Service{})
@@ -108,14 +105,6 @@ func exit(sig os.Signal) {
 	log.Infof("%s exit by recving the signal %v", AppName, sig)
 	_ = server.Stop()
 	os.Exit(0)
-}
-
-func initializeMetaStore() {
-	err := metastore.GetInstance().AutoMigrate()
-	if err != nil {
-		log.Warnf("init meta automigrate failed. err=%s", err)
-		return
-	}
 }
 
 func initComponent(ctx *cli.Context) error {
