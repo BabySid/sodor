@@ -9,10 +9,8 @@ import (
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	"io"
 	"os"
 	"path/filepath"
-	"sodor/base"
 	"sodor/fat_controller/config"
 	"sodor/fat_controller/grpc"
 	"sodor/fat_controller/jsonrpc"
@@ -59,14 +57,14 @@ func NewApp() *cli.App {
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 
-	cli.AppHelpTemplate = base.AppHelpTemplate
-	originalHelpPrinter := cli.HelpPrinter
-	cli.HelpPrinter = func(w io.Writer, tmpl string, data interface{}) {
-		originalHelpPrinter(w, tmpl, base.HelpData{
-			App:        data,
-			FlagGroups: config.AppHelpFlagGroups,
-		})
-	}
+	//cli.AppHelpTemplate = base.AppHelpTemplate
+	//originalHelpPrinter := cli.HelpPrinter
+	//cli.HelpPrinter = func(w io.Writer, tmpl string, data interface{}) {
+	//	originalHelpPrinter(w, tmpl, base.HelpData{
+	//		App:        data,
+	//		FlagGroups: config.AppHelpFlagGroups,
+	//	})
+	//}
 
 	return app
 }
