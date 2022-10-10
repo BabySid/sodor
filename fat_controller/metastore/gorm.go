@@ -41,5 +41,5 @@ func initGorm(dsn string) (*gorm.DB, error) {
 type logWriter struct{}
 
 func (w *logWriter) Printf(format string, data ...interface{}) {
-	log.Infof(format, data)
+	log.Infof(format, data...)
 }
