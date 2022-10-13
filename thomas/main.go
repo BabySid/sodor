@@ -73,11 +73,6 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
-	err := initComponent(ctx)
-	if err != nil {
-		return err
-	}
-
 	var rotator *logOption.Rotator
 	if !ctx.Bool(config.DebugMode.Name) {
 		rotator = &logOption.Rotator{
@@ -86,15 +81,22 @@ func runApp(ctx *cli.Context) error {
 		}
 	}
 
-	server = gorpc.NewServer(httpcfg.DefaultOption)
-	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, &grpc.Service{})
-
-	return server.Run(gorpc.ServerOption{
+	server = gorpc.NewServer(gorpc.ServerOption{
 		Addr:        ctx.String(config.ListenAddr.Name),
 		ClusterName: "thomas",
 		Rotator:     rotator,
 		LogLevel:    ctx.String(config.LogLevel.Name),
+		HttpOpt:     httpcfg.DefaultOption,
 	})
+
+	err := initComponent(ctx)
+	if err != nil {
+		return err
+	}
+
+	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, &grpc.Service{})
+
+	return server.Run()
 }
 
 func init() {

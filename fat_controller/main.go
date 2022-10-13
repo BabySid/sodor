@@ -74,15 +74,6 @@ func runApp(ctx *cli.Context) error {
 		cli.ShowAppHelpAndExit(ctx, 1)
 	}
 
-	err := initComponent(ctx)
-	if err != nil {
-		return err
-	}
-
-	server = gorpc.NewServer(httpcfg.ServerOption{Codec: httpcfg.ProtobufCodec})
-	_ = server.RegisterJsonRPC("rpc", &jsonrpc.Service{})
-	_ = server.RegisterGrpc(&sodor.FatController_ServiceDesc, &grpc.Service{})
-
 	var rotator *logOption.Rotator
 	if !ctx.Bool(config.DebugMode.Name) {
 		rotator = &logOption.Rotator{
@@ -91,12 +82,23 @@ func runApp(ctx *cli.Context) error {
 		}
 	}
 
-	return server.Run(gorpc.ServerOption{
+	server = gorpc.NewServer(gorpc.ServerOption{
 		Addr:        ctx.String(config.ListenAddr.Name),
 		ClusterName: "fat_ctrl",
 		Rotator:     rotator,
 		LogLevel:    ctx.String(config.LogLevel.Name),
+		HttpOpt:     httpcfg.ServerOption{Codec: httpcfg.ProtobufCodec},
 	})
+
+	err := initComponent(ctx)
+	if err != nil {
+		return err
+	}
+
+	_ = server.RegisterJsonRPC("rpc", &jsonrpc.Service{})
+	_ = server.RegisterGrpc(&sodor.FatController_ServiceDesc, &grpc.Service{})
+
+	return server.Run()
 }
 
 func exit(sig os.Signal) {
