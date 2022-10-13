@@ -88,12 +88,10 @@ func runApp(ctx *cli.Context) error {
 		Rotator:     rotator,
 		LogLevel:    ctx.String(config.LogLevel.Name),
 		HttpOpt:     httpcfg.ServerOption{Codec: httpcfg.ProtobufCodec},
+		Action: func() error {
+			return initComponent(ctx)
+		},
 	})
-
-	err := initComponent(ctx)
-	if err != nil {
-		return err
-	}
 
 	_ = server.RegisterJsonRPC("rpc", &jsonrpc.Service{})
 	_ = server.RegisterGrpc(&sodor.FatController_ServiceDesc, &grpc.Service{})

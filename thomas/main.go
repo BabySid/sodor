@@ -87,12 +87,10 @@ func runApp(ctx *cli.Context) error {
 		Rotator:     rotator,
 		LogLevel:    ctx.String(config.LogLevel.Name),
 		HttpOpt:     httpcfg.DefaultOption,
+		Action: func() error {
+			return initComponent(ctx)
+		},
 	})
-
-	err := initComponent(ctx)
-	if err != nil {
-		return err
-	}
 
 	_ = server.RegisterGrpc(&sodor.Thomas_ServiceDesc, &grpc.Service{})
 
