@@ -87,7 +87,7 @@ func runApp(ctx *cli.Context) error {
 		Rotator:     rotator,
 		LogLevel:    ctx.String(config.LogLevel.Name),
 		HttpOpt:     httpcfg.DefaultOption,
-		Action: func() error {
+		BeforeRun: func() error {
 			return initComponent(ctx)
 		},
 	})
