@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2/altsrc"
 	"sodor/base"
 )
 
@@ -42,6 +43,13 @@ var (
 		Value:       24 * 7,
 	}
 
+	ConfFile = &cli.StringFlag{
+		Name:        "config",
+		Usage:       "TOML configuration file",
+		DefaultText: "",
+		Value:       "",
+	}
+
 	DebugMode = &cli.BoolFlag{
 		Name:        "debug",
 		Usage:       "Set the debug mode",
@@ -50,12 +58,14 @@ var (
 	}
 
 	GlobalFlags = []cli.Flag{
-		ListenAddr,
-		MetaStore,
-		LogLevel,
-		LogPath,
-		LogMaxAge,
-		DebugMode,
+		altsrc.NewStringFlag(ListenAddr),
+		altsrc.NewStringFlag(MetaStore),
+		altsrc.NewStringFlag(LogLevel),
+		altsrc.NewStringFlag(LogPath),
+		altsrc.NewIntFlag(LogMaxAge),
+		altsrc.NewBoolFlag(DebugMode),
+
+		ConfFile,
 	}
 
 	AppHelpFlagGroups = []base.FlagGroup{

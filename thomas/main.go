@@ -9,6 +9,7 @@ import (
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2/altsrc"
 	"os"
 	"path/filepath"
 	"sodor/base"
@@ -49,6 +50,11 @@ func NewApp() *cli.App {
 	app.Action = runApp
 
 	app.Flags = config.GlobalFlags
+	app.Before = func(ctx *cli.Context) error {
+		BeforeFunc := altsrc.InitInputSourceWithContext(config.GlobalFlags, altsrc.NewTomlSourceFromFlagFunc(config.ConfFile.Name))
+		_ = BeforeFunc(ctx)
+		return nil
+	}
 	app.Commands = []*cli.Command{
 		&runTask,
 	}
