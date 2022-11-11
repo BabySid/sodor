@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func checkTaskValid(job *sodor.Job, create bool) error {
+func checkJobValid(job *sodor.Job, create bool) error {
 	if create && job.Id != 0 {
 		return errors.New("job.id must not be set")
 	}
@@ -57,6 +57,14 @@ func checkTaskValid(job *sodor.Job, create bool) error {
 
 		if len(strings.TrimSpace(task.Script)) == 0 {
 			return fmt.Errorf("task.script is empty")
+		}
+
+		if len(task.RunningHosts) != 1 {
+			return fmt.Errorf("task.running_hosts must have only one host")
+		}
+
+		if task.RunningHosts[0].Type != sodor.HostType_HostType_IP || task.RunningHosts[0].Node == "" {
+			return fmt.Errorf("task.running_hosts.item must be IP")
 		}
 
 		if _, ok := s[task.Name]; ok {

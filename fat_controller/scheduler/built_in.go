@@ -21,7 +21,7 @@ func handShakeWithOverDueThomas() {
 func pingThomas(thomas *metastore.Thomas) {
 	err := PingThomas(int32(thomas.ID), thomas.Host, thomas.Port)
 	if err != nil {
-		log.Warnf("PingThomas failed. err=%s", err)
+		log.Warnf("PingThomas(id:%d, host:%s, port:%d) failed. err=%s", thomas.ID, thomas.Host, thomas.Port, err)
 	}
 }
 

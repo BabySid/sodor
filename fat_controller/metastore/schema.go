@@ -49,7 +49,6 @@ type Task struct {
 	RunningHosts string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
 	Type         string `gorm:"not null;default:'';size:16"`
 	Script       string `gorm:"not null;default:'';type:mediumtext"`
-	RunTimeout   int    `gorm:"not null;default:0"` // seconds
 }
 
 type TaskRelation struct {

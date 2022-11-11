@@ -1,11 +1,13 @@
 package scheduler
 
 import (
+	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"sodor/fat_controller/metastore"
+	"sodor/fat_controller/thomas"
 	"sync"
 	"time"
 )
@@ -90,8 +92,12 @@ func (jc *jobContext) Run() {
 		taskInstances: taskInsMap,
 	}
 
-	jc.runTask(int32(jc.jobDag.topoNodes[0].ID()))
-	logJob(jc.job).Infof("run job at %s, instance_id=%d", gobase.FormatTimeStamp(int64(curInstance.ScheduleTs)), curInstance.Id)
+	go func() {
+		taskIns, task := jc.getTaskInstance(curInstance.Id, int32(jc.jobDag.topoNodes[0].ID()))
+		jc.runTask(curInstance.Id, taskIns, task)
+		logJob(jc.job).Infof("run job at %s, job_instance_id=%d", gobase.FormatTimeStamp(int64(curInstance.ScheduleTs)), curInstance.Id)
+	}()
+
 	return
 }
 
@@ -137,6 +143,7 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 				} else {
 					nextTask = int(jc.jobDag.topoNodes[i+1].ID())
 				}
+				break
 			}
 		}
 	}
@@ -157,24 +164,78 @@ func (jc *jobContext) buildJobInstance(ins *sodor.TaskInstance, jobIns *sodor.Jo
 	jobIns.ExitMsg = ins.ExitMsg
 }
 
-func (jc *jobContext) runTask(taskId int32) {
-	// select nodes from thomas
+func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (int32, *sodor.Task) {
+	jc.lock.Lock()
+	defer jc.lock.Unlock()
+
+	var taskIns int32
 	var task *sodor.Task
+
+	for id, t := range jc.instances[jobIns].taskInstances {
+		if t.Id == taskId {
+			taskIns = id
+		}
+	}
 	for _, t := range jc.job.Tasks {
 		if t.Id == taskId {
 			task = t
 		}
 	}
+	return taskIns, task
+}
 
-	gobase.True(task != nil)
-	log.Infof("run task task_id=%d task_name=%s", task.Id, task.Name)
-	// send task request to thomas
-	// if error found in scheduler, then call UpdateTaskInstance(...)
+func (jc *jobContext) runTask(jobIns int32, taskIns int32, task *sodor.Task) {
+	var err error
+	var th *metastore.Thomas
+	defer func() {
+		if err != nil {
+			jc.terminalJob(jobIns, taskIns, task, err)
+		}
+		log.Infof("run task task_id=%d task_name=%s err=%v", task.Id, task.Name, err)
+	}()
+
+	th, err = metastore.GetInstance().SelectValidThomas(task.RunningHosts[0].Node)
+	if err != nil {
+		return
+	}
+
+	if th.ID == 0 {
+		err = fmt.Errorf("no thomas found for host(%s)", task.RunningHosts[0].Node)
+		return
+	}
+
+	err = jc.sendTaskToThomas(th, jobIns, taskIns, task)
+}
+
+func (jc *jobContext) terminalJob(jobInsID int32, taskInsID int32, task *sodor.Task, cause error) {
+	var taskIns sodor.TaskInstance
+	taskIns.Id = taskInsID
+	taskIns.JobId = task.JobId
+	taskIns.TaskId = task.Id
+	taskIns.JobInstanceId = jobInsID
+	taskIns.StartTs = int32(time.Now().Unix())
+	taskIns.StopTs = int32(time.Now().Unix())
+	taskIns.Host = task.RunningHosts[0].Node
+	taskIns.ExitCode = -1
+	taskIns.ExitMsg = cause.Error()
+
+	_, err := jc.UpdateTaskInstance(&taskIns)
+	if err != nil {
+		log.Warnf("UpdateTaskInstance failed. err=%s", err)
+	}
 }
 
 func (jc *jobContext) loadInstanceFromMetaStore(job *sodor.JobInstance, task *sodor.TaskInstances) error {
 	err := metastore.GetInstance().SelectJobTaskInstance(job, task)
 	return err
+}
+
+func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, jobIns int32, taskIns int32, task *sodor.Task) error {
+	t := thomas.Thomas{
+		Host: th.Host,
+		Port: th.Port,
+	}
+	return t.RunTask(jobIns, taskIns, task)
 }
 
 func logJob(jc *sodor.Job) *log.Entry {

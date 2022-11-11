@@ -70,8 +70,6 @@ func toTask(in *sodor.Task, jobID int32, out *Task) error {
 		out.RunningHosts = string(jsonBytes)
 	}
 
-	out.RunTimeout = int(in.RunningTimeout)
-
 	return nil
 }
 
@@ -88,8 +86,6 @@ func fromTask(in *Task, out *sodor.Task) error {
 
 	out.Type = sodor.TaskType(sodor.TaskType_value[in.Type])
 	out.Script = in.Script
-
-	out.RunningTimeout = int32(in.RunTimeout)
 
 	out.CreateAt = int32(in.CreatedAt.Unix())
 	out.UpdateAt = int32(in.UpdatedAt.Unix())

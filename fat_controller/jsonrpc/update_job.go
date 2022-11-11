@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, *httpapi.JsonRpcError) {
-	if err := checkTaskValid(params, false); err != nil {
+	if err := checkJobValid(params, false); err != nil {
 		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams, httpapi.SysCodeMap[httpapi.InvalidParams], err)
 	}
 
