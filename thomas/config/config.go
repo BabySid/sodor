@@ -12,6 +12,7 @@ type config struct {
 	LocalIP string
 	Port    int
 
+	DataPath     string
 	TaskIdentity string
 	AppName      string
 	AppVersion   string
@@ -39,5 +40,7 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	gobase.TrueF(err == nil, "invalid port of %s", ListenAddr.Name)
 	c.Port = port
 
+	c.TaskIdentity = ctx.String(TaskIdentity.Name)
+	c.DataPath = ctx.String(DataPath.Name)
 	return nil
 }

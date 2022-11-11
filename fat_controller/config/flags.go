@@ -17,9 +17,9 @@ var (
 	MetaStore = &cli.StringFlag{
 		Name:        "metastore.addr",
 		Usage:       "Set the metastore address",
-		Required:    true,
 		DefaultText: "mysql://$user:$passwd@tcp($host:$port)/$db?charset=utf8mb4&parseTime=True&loc=Local",
 		Value:       "",
+		Destination:
 	}
 
 	LogLevel = &cli.StringFlag{
