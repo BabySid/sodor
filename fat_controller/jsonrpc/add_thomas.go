@@ -31,12 +31,11 @@ func (s *Service) AddThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) (
 
 	err = scheduler.PingThomas(params.Id, params.Host, int(params.Port))
 
-	ctx.ToLog("AddThomas Done: %+v", params)
-
 	if err != nil {
 		return nil, httpapi.NewJsonRpcError(httpapi.InternalError,
 			httpapi.SysCodeMap[httpapi.InternalError], err)
 	}
 
+	ctx.ToLog("AddThomas Done: %+v", params)
 	return &sodor.ThomasReply{Id: params.Id}, nil
 }
