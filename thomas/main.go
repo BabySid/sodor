@@ -16,6 +16,7 @@ import (
 	"sodor/thomas/config"
 	"sodor/thomas/grpc"
 	"sodor/thomas/routine"
+	"sodor/thomas/task_runner"
 	"sort"
 	"syscall"
 )
@@ -116,6 +117,10 @@ func initComponent(ctx *cli.Context) error {
 
 	if err := routine.GetInstance().Start(); err != nil {
 		log.Fatalf("routine start failed. err=%s", err)
+	}
+
+	if err := task_runner.GetTaskEnv().LoadTasksStatus(); err != nil {
+		log.Fatalf("task_runner load status failed. err=%s", err)
 	}
 
 	return nil

@@ -46,9 +46,13 @@ func (fc *FatCtrl) Run() {
 	fc.HandShake()
 }
 
-func (fc *FatCtrl) getFatCtrlHost() (*grpc.ClientConn, error) {
+func (fc *FatCtrl) getFatCtrlConn() (*grpc.ClientConn, error) {
 	fc.mux.Lock()
 	defer fc.mux.Unlock()
+
+	if fc.thomasID == 0 {
+		return nil, errors.New("thomas_id is not set")
+	}
 
 	if len(fc.fatCtrlHosts) == 0 {
 		return nil, errors.New("don't known fat_ctrl's address")

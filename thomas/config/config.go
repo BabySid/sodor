@@ -6,16 +6,18 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type config struct {
 	LocalIP string
 	Port    int
 
-	DataPath     string
-	TaskIdentity string
-	AppName      string
-	AppVersion   string
+	DataPath      string
+	TaskIdentity  string
+	AppName       string
+	AppVersion    string
+	RetryInterval time.Duration
 }
 
 var (
@@ -42,5 +44,6 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 
 	c.TaskIdentity = ctx.String(TaskIdentity.Name)
 	c.DataPath = ctx.String(DataPath.Name)
+	c.RetryInterval = time.Second * 5
 	return nil
 }

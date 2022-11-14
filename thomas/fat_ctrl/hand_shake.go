@@ -12,14 +12,9 @@ import (
 )
 
 func (fc *FatCtrl) HandShake() {
-	if fc.thomasID == 0 || len(fc.fatCtrlHosts) == 0 {
-		log.Warn("wait for get fat_ctrl info. thomasID=%d fc.fatCtrlHosts.size=%d", fc.thomasID, len(fc.fatCtrlHosts))
-		return
-	}
-
-	conn, err := fc.getFatCtrlHost()
+	conn, err := fc.getFatCtrlConn()
 	if err != nil {
-		log.Warnf("getFatCtrlHost failed. err=%s", err)
+		log.Warnf("getFatCtrlConn failed. err=%s", err)
 		return
 	}
 
@@ -47,11 +42,11 @@ func (fc *FatCtrl) HandShake() {
 	_, err = cli.HandShake(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {
 		if s != nil {
-			log.Warnf("HandShake to thomas failed. code=%d, msg=%s", s.Code(), s.Message())
+			log.Warnf("HandShake to fat_ctrl failed. code=%d, msg=%s", s.Code(), s.Message())
 		}
 	} else {
 		if err != nil {
-			log.Warnf("HandShake to thomas failed. err=%s", err)
+			log.Warnf("HandShake to fat_ctrl failed. err=%s", err)
 		}
 	}
 }
