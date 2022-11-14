@@ -1,7 +1,6 @@
 package metastore
 
 import (
-	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"gorm.io/gorm"
@@ -12,39 +11,22 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 	var thomas Thomas
 	_ = toThomas(req, &thomas)
 
-	if thomas.ID == 0 {
-		id, err := ms.getThomasByHostPort(req.Host, req.Port)
-		if err != nil {
-			return err
-		}
-		thomas.ID = id
-	}
-	req.Id = int32(thomas.ID)
-
-	if thomas.ID > 0 {
-		if rs := ms.db.Model(&thomas).Select(thomas.UpdateFields()).Updates(thomas); rs.Error != nil {
+	rs := ms.db.Transaction(func(tx *gorm.DB) error {
+		if rs := tx.Model(&thomas).Select(thomas.UpdateFields()).Updates(thomas); rs.Error != nil {
 			return rs.Error
 		}
 
-		rs := ms.db.Transaction(func(tx *gorm.DB) error {
-			if rs := tx.Model(&thomas).Select(thomas.UpdateFields()).Updates(thomas); rs.Error != nil {
-				return rs.Error
-			}
+		var tIns ThomasInstance
+		tIns.ThomasID = int32(thomas.ID)
+		tIns.Metrics = thomas.Metrics
+		if rs := tx.Create(&tIns); rs.Error != nil {
+			return rs.Error
+		}
 
-			var tIns ThomasInstance
-			tIns.ThomasID = int32(thomas.ID)
-			tIns.Metrics = thomas.Metrics
-			if rs := tx.Create(&tIns); rs.Error != nil {
-				return rs.Error
-			}
+		return nil
+	})
 
-			return nil
-		})
-
-		return rs
-	}
-
-	return fmt.Errorf("unknown thomas")
+	return rs
 }
 
 func (ms *metaStore) UpdateThomasStatus(id int32, status string) error {
@@ -80,16 +62,13 @@ func (ms *metaStore) getThomasByHostPort(host string, port int32) (uint, error) 
 	t.Host = host
 	t.Port = int(port)
 
-	var ts []apiThomas
-	rs := ms.db.Model(&Thomas{}).Where(&t).Find(&ts)
+	var ts apiThomas
+	rs := ms.db.Model(&Thomas{}).Where(&t).Take(&ts)
 	if rs.Error != nil {
 		return 0, rs.Error
 	}
-	if rs.RowsAffected > 0 {
-		return ts[0].ID, nil
-	}
 
-	return 0, nil
+	return ts.ID, nil
 }
 
 func (ms *metaStore) ThomasExistByID(id int32) (bool, error) {
@@ -100,13 +79,13 @@ func (ms *metaStore) ThomasExistByID(id int32) (bool, error) {
 	var t Thomas
 	t.ID = uint(id)
 
-	var ts []apiThomas
-	rs := ms.db.Model(&Thomas{}).Where(&t).Find(&ts)
+	var ts apiThomas
+	rs := ms.db.Model(&Thomas{}).Where(&t).Take(&ts)
 	if rs.Error != nil {
 		return false, rs.Error
 	}
 
-	if rs.RowsAffected > 0 {
+	if ts.ID > 0 {
 		return true, nil
 	}
 

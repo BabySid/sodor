@@ -17,7 +17,7 @@ type Thomas struct {
 	Port int
 }
 
-func (t *Thomas) HandShake() error {
+func (t *Thomas) HandShake(id int32) error {
 	conn, err := t.dial()
 	if err != nil {
 		return err
@@ -27,8 +27,7 @@ func (t *Thomas) HandShake() error {
 	cli := sodor.NewThomasClient(conn)
 
 	var req sodor.FatCtrlInfo
-	// todo build req from metastore
-	req.Id = 1
+	req.Id = id
 	req.Name = config.GetInstance().AppName
 	req.Version = config.GetInstance().AppVersion
 	req.Host = config.GetInstance().LocalIP

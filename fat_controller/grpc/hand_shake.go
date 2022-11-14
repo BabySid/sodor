@@ -14,6 +14,10 @@ func (s *Service) HandShake(ctx context.Context, req *sodor.ThomasInfo) (*sodor.
 	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
 	log.Infof("HandShake from %s req.Id=%d", ip, req.Id)
 
+	if req.Id == 0 {
+		return nil, status.Error(codes.InvalidArgument, "invalid req.Id")
+	}
+
 	if err := metastore.GetInstance().UpsertThomas(req); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
