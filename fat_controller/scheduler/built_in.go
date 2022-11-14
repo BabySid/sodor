@@ -34,7 +34,7 @@ func PingThomas(id int32, host string, port int) error {
 	err := t.HandShake()
 
 	if err != nil {
-		return metastore.GetInstance().UpdateThomasStatus(id, "")
+		return metastore.GetInstance().UpdateThomasStatus(id, err.Error())
 	}
 	return nil
 }
