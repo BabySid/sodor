@@ -1,6 +1,7 @@
 package metastore
 
 import (
+	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"gorm.io/gorm"
@@ -18,19 +19,32 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 		}
 		thomas.ID = id
 	}
+	req.Id = int32(thomas.ID)
 
 	if thomas.ID > 0 {
 		if rs := ms.db.Model(&thomas).Select(thomas.UpdateFields()).Updates(thomas); rs.Error != nil {
 			return rs.Error
 		}
-	} else {
-		thomas.ThomasType = sodor.ThomasType_Thomas_Dynamic.String()
-		if rs := ms.db.Create(&thomas); rs.Error != nil {
-			return rs.Error
-		}
+
+		rs := ms.db.Transaction(func(tx *gorm.DB) error {
+			if rs := tx.Model(&thomas).Select(thomas.UpdateFields()).Updates(thomas); rs.Error != nil {
+				return rs.Error
+			}
+
+			var tIns ThomasInstance
+			tIns.ThomasID = int32(thomas.ID)
+			tIns.Metrics = thomas.Metrics
+			if rs := tx.Create(&tIns); rs.Error != nil {
+				return rs.Error
+			}
+
+			return nil
+		})
+
+		return rs
 	}
-	req.Id = int32(thomas.ID)
-	return nil
+
+	return fmt.Errorf("unknown thomas")
 }
 
 func (ms *metaStore) UpdateThomasStatus(id int32, status string) error {
