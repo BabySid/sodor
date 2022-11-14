@@ -11,22 +11,21 @@ import (
 
 func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.JobReply, *httpapi.JsonRpcError) {
 	if err := checkJobValid(params, false); err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams, httpapi.SysCodeMap[httpapi.InvalidParams], err)
+		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, err)
 	}
 
 	exist, err := metastore.GetInstance().JobExist(params)
 	if err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
+		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 
 	if !exist {
-		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
-			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job not exist"))
+		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("job not exist"))
 	}
 
 	err = metastore.GetInstance().UpdateJob(params)
 	if err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
+		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 
 	err = scheduler.GetInstance().Remove(params)

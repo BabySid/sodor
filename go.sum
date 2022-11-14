@@ -118,6 +118,8 @@ github.com/BabySid/gobase v0.0.0-20221114091117-3a06ae016938 h1:bUZER5+gFWYJcmND
 github.com/BabySid/gobase v0.0.0-20221114091117-3a06ae016938/go.mod h1:psRlcjEywZdxNf9jp6IdYY7VcAsYPtcnLHYQ+dWG5uw=
 github.com/BabySid/gorpc v0.0.0-20221108101409-758a9851a83e h1:YRbwrt1F3EXNEvQEeR/3ZK4huejSItxZWrNtacFXuf8=
 github.com/BabySid/gorpc v0.0.0-20221108101409-758a9851a83e/go.mod h1:3B1N3EfMKBSVIY4mc+eUyjqdh62ODu7cVtp33ZGzxyc=
+github.com/BabySid/gorpc v0.0.0-20221114095529-e086f2e102ff h1:i/Es1YlbkE/zGEixhX4voYsLJ7k9c90WjaRQ8GmBiE0=
+github.com/BabySid/gorpc v0.0.0-20221114095529-e086f2e102ff/go.mod h1:3B1N3EfMKBSVIY4mc+eUyjqdh62ODu7cVtp33ZGzxyc=
 github.com/BabySid/proto v0.0.0-20221111064617-335fe2a2f384 h1:7hZF/m+srng6DsHS3+jIfTEaO8FHtQqRXUyzoUO/vLE=
 github.com/BabySid/proto v0.0.0-20221111064617-335fe2a2f384/go.mod h1:cSJ+d6Znm3Ju/WlMxETsHcCLawedmjDo89ZR9J1lLdE=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=

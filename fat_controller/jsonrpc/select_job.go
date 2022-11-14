@@ -9,18 +9,16 @@ import (
 
 func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.Job, *httpapi.JsonRpcError) {
 	if params.Id == 0 {
-		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
-			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job.id must be set"))
+		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("job.id must be set"))
 	}
 
 	exist, err := metastore.GetInstance().JobExist(params)
 	if err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
+		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 
 	if !exist {
-		return nil, httpapi.NewJsonRpcError(httpapi.InvalidParams,
-			httpapi.SysCodeMap[httpapi.InvalidParams], errors.New("job not exist"))
+		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("job not exist"))
 	}
 
 	var job sodor.Job
@@ -28,7 +26,7 @@ func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 
 	err = metastore.GetInstance().SelectJob(&job)
 	if err != nil {
-		return nil, httpapi.NewJsonRpcError(httpapi.InternalError, httpapi.SysCodeMap[httpapi.InternalError], err)
+		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 
 	ctx.ToLog("SelectJob Done: %+v", params)
