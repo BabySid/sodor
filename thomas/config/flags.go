@@ -19,6 +19,7 @@ var (
 		Usage:       "Set the path for the context of tasks. e.g. the task log, response and so on",
 		DefaultText: ".",
 		Value:       "./",
+		Destination: &GetInstance().DataPath,
 	}
 
 	LogLevel = &cli.StringFlag{
@@ -61,6 +62,7 @@ var (
 		Usage:       "Set the identity for running task. e.g. log prefix",
 		DefaultText: "RunTask",
 		Value:       "RunTask",
+		Destination: &GetInstance().TaskIdentity,
 	}
 
 	GlobalFlags = []cli.Flag{

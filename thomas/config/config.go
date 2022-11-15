@@ -42,8 +42,6 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	gobase.TrueF(err == nil, "invalid port of %s", ListenAddr.Name)
 	c.Port = port
 
-	c.TaskIdentity = ctx.String(TaskIdentity.Name)
-	c.DataPath = ctx.String(DataPath.Name)
 	c.RetryInterval = time.Second * 5
 	return nil
 }
