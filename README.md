@@ -3,25 +3,6 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 
 # Some Expected Usage
 * fat_ctrl
-  * ./fat_ctrl --port xxxx --metastore mysql://user:pass@tcp(1.2.3.4:3306)/charset=utf8
+  * ./fat_ctrl --listen_addr=xxxx --metastore mysql://user:pass@tcp(1.2.3.4:3306)/charset=utf8
 * thomas
-  * ./thomas --grpc.port xxxx 
-  * run job
-    * ./thomas --standalone run_job --job.workdir ./$jobid/
-    * job.workdir
-      * meta.json 
-        * write by thomas
-        * include
-          * process_id
-          * ttl
-      * status.json
-        * write by thomas-job
-        * include
-          * total time
-          * exit code
-          * exit msg
-          * process id
-      * log
-        * task1.log
-        * task2.log
-      * data
+  * ./thomas --data.path=../data

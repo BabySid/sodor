@@ -77,10 +77,6 @@ func NewApp() *cli.App {
 }
 
 func runApp(ctx *cli.Context) error {
-	if ctx.NumFlags() == 0 {
-		cli.ShowAppHelpAndExit(ctx, 1)
-	}
-
 	var rotator *logOption.Rotator
 	if !ctx.Bool(config.DebugMode.Name) {
 		rotator = &logOption.Rotator{
