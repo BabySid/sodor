@@ -37,8 +37,8 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	gobase.TrueF(len(arr) >= 1, "%s format is '[$host]:$port'", ListenAddr.Name)
 
 	c.LocalIP = base.LocalHost
-	port, err := strconv.Atoi(arr[0])
-	gobase.TrueF(err == nil, "invalid port of %s", ListenAddr.Name)
+	port, err := strconv.Atoi(arr[1])
+	gobase.TrueF(err == nil, "invalid port of %s", addr)
 	c.Port = port
 
 	return nil
