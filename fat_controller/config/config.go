@@ -41,7 +41,5 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	gobase.TrueF(err == nil, "invalid port of %s", ListenAddr.Name)
 	c.Port = port
 
-	c.MetaStoreUri = ctx.String(MetaStore.Name)
-
 	return nil
 }
