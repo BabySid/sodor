@@ -4,7 +4,7 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 # Usage
 ```shell
 # fat_ctrl
-./fat_ctrl --metastore mysql://user:pass@tcp(1.2.3.4:3306)/charset=utf8 --listen_addr=:9527 --log.path=../logs
+./fat_ctrl --metastore.addr="mysql://user:pass@tcp(1.2.3.4:3306)/dbName?charset=utf8mb4&parseTime=True&loc=Local" --listen_addr=:9527 --log.path=../logs
 
 # thomas
 ./thomas --data.path=../data --listen_addr=:9528 --log.path=../logs
