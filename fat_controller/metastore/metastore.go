@@ -12,7 +12,7 @@ import (
 func parseDSN(uri string) (string, error) {
 	scheme := "mysql://"
 	if !strings.HasPrefix(uri, scheme) {
-		return "", fmt.Errorf("dsn must start with '%s'", scheme)
+		return "", fmt.Errorf("dsn(%s) must start with '%s'", uri, scheme)
 	}
 	return uri[len(scheme):], nil
 }
