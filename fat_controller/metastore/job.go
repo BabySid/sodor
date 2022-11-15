@@ -25,7 +25,7 @@ func (ms *metaStore) JobExist(job *sodor.Job) (bool, error) {
 		return false, rs.Error
 	}
 
-	if rs.RowsAffected > 0 {
+	if jobs.ID > 0 {
 		return true, nil
 	}
 

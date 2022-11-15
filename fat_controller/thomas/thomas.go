@@ -36,7 +36,7 @@ func (t *Thomas) HandShake(id int32) error {
 	_, err = cli.HandShake(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {
 		if s != nil {
-			log.Warnf("HandShake to thomas failed. code = %d, msg = %s", s.Code(), s.Message())
+			log.Warnf("HandShake to thomas failed. code=%d, msg=%s", s.Code(), s.Message())
 			return errors.New(s.String())
 		}
 	}
@@ -62,7 +62,7 @@ func (t *Thomas) RunTask(jobIns int32, taskIns int32, task *sodor.Task) error {
 	_, err = cli.RunTask(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {
 		if s != nil {
-			log.Warnf("RunTask to thomas failed. code = %d, msg = %s", s.Code(), s.Message())
+			log.Warnf("RunTask to thomas failed. code=%d, msg=%s", s.Code(), s.Message())
 			return errors.New(s.String())
 		}
 	}
@@ -74,7 +74,7 @@ func (t *Thomas) dial() (*grpc.ClientConn, error) {
 	host := t.Host + ":" + strconv.Itoa(t.Port)
 	conn, err := grpc.Dial(host, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Warnf("Dial host = %s failed. err = %s", host, err)
+		log.Warnf("Dial host=%s failed. err=%s", host, err)
 		return nil, err
 	}
 

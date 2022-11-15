@@ -77,12 +77,11 @@ type AlertHistory struct {
 	ParamsValue string `gorm:"not null;type:text"`
 }
 
+// ScheduleState stores jobs with a crontab-scheduler
 type ScheduleState struct {
 	TableModel
 	JobID int32  `gorm:"not null;uniqueIndex:uniq_job"`
 	Host  string `gorm:"not null;size:64;uniqueIndex:uniq_job"`
-	//JobInstanceID int32  `gorm:"not null;default:0"` // 0 is init
-	//JobScheduleTime int32  `gorm:"not null;default:0"`
 }
 
 type JobInstance struct {

@@ -16,7 +16,6 @@ type jobContext struct {
 	lock   sync.Mutex
 	job    *sodor.Job
 	jobDag *dag
-	//dirty  bool // True indicates that job needs to be synchronized from the metastore layer
 	cronID cron.EntryID
 
 	lastInsID int32
@@ -32,9 +31,8 @@ type instance struct {
 
 func newJobContext() *jobContext {
 	return &jobContext{
-		job:    nil,
-		jobDag: nil,
-		//dirty:  true,
+		job:       nil,
+		jobDag:    nil,
 		cronID:    0,
 		lastInsID: 0,
 		instances: make(map[int32]*instance),
@@ -68,6 +66,7 @@ func (jc *jobContext) Run() {
 	curInstance := &sodor.JobInstance{
 		JobId:      jc.job.Id,
 		ScheduleTs: int32(time.Now().Unix()),
+		StartTs:    int32(time.Now().Unix()),
 	}
 
 	taskInstances := make([]*sodor.TaskInstance, len(jc.job.Tasks))
@@ -112,6 +111,8 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		var taskInstances sodor.TaskInstances
 		err := jc.loadInstanceFromMetaStore(&curInstance, &taskInstances)
 		if err != nil {
+			log.Warnf("loadInstanceFromMetaStore return err=%v. taskInstance.Id=%d jobId=%d taskId=%d",
+				err, ins.Id, ins.JobId, ins.TaskId)
 			return 0, err
 		}
 		taskInsMap := make(map[int32]*sodor.TaskInstance)
@@ -181,6 +182,8 @@ func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (int32, *sodor
 			task = t
 		}
 	}
+
+	gobase.True(taskIns > 0 && task != nil)
 	return taskIns, task
 }
 
@@ -213,7 +216,6 @@ func (jc *jobContext) terminalJob(jobInsID int32, taskInsID int32, task *sodor.T
 	taskIns.JobId = task.JobId
 	taskIns.TaskId = task.Id
 	taskIns.JobInstanceId = jobInsID
-	taskIns.StartTs = int32(time.Now().Unix())
 	taskIns.StopTs = int32(time.Now().Unix())
 	taskIns.Host = task.RunningHosts[0].Node
 	taskIns.ExitCode = -1

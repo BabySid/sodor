@@ -95,13 +95,15 @@ func (e *taskEnv) LoadTasksStatus() error {
 func (e *taskEnv) updateTaskInstances(taskInstances map[string]*sodor.TaskInstance) {
 	for path, ins := range taskInstances {
 		if !gobase.IsProcessAlive(int(ins.Pid)) {
-			if err := fat_ctrl.GetInstance().UpdateTaskInstance(ins); err != nil {
+			newIns, _ := e.GetTaskResponse(path) // need update the task-instance
+			if err := fat_ctrl.GetInstance().UpdateTaskInstance(newIns); err != nil {
 				log.Warnf("UpdateTaskInstance(%s) failed. retry after %v", path, config.GetInstance().RetryInterval)
 				time.Sleep(config.GetInstance().RetryInterval)
 				continue
 			}
 			delete(taskInstances, path)
 			e.Remove(path)
+			log.Infof("UpdateTaskInstance(%s) success.", path)
 		}
 	}
 }

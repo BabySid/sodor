@@ -19,7 +19,7 @@ func (s *ShellRunner) Run() error {
 	s.outputVars = make(map[string]interface{})
 
 	if err := s.SetUp(); err != nil {
-		Warn.Printf("task SetUp failed. err = %s", err.Error())
+		Warn.Printf("task SetUp failed. err=%s", err.Error())
 		return err
 	}
 
@@ -30,14 +30,14 @@ func (s *ShellRunner) Run() error {
 	defer func() {
 		Info.Printf("task(%d-%d-%s) run finished", s.request.JobId, s.request.TaskId, s.request.Task.Name)
 		if err := s.TearDown(); err != nil {
-			Warn.Printf("task(%d-%d-%s) TearDown failed. err = %s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
+			Warn.Printf("task(%d-%d-%s) TearDown failed. err=%s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
 		}
 	}()
 
 	// [\\$#]\\{set_value\\(([^)]*)\\)}
 	req, err := regexp.Compile("set_value\\(([^)]*)\\)")
 	if err != nil {
-		Warn.Printf("task(%d-%d-%s) regexp.Compile failed. err = %s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
+		Warn.Printf("task(%d-%d-%s) regexp.Compile failed. err=%s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
 		s.response.ExitMsg = err.Error()
 		return err
 	}
@@ -55,7 +55,7 @@ func (s *ShellRunner) Run() error {
 
 	vars, err := structpb.NewStruct(s.outputVars)
 	if err != nil {
-		Warn.Printf("task(%d-%d-%s) structpb.NewStruct(%+v) failed. err = %s",
+		Warn.Printf("task(%d-%d-%s) structpb.NewStruct(%+v) failed. err=%s",
 			s.request.JobId, s.request.TaskId, s.request.Task.Name, s.outputVars, err.Error())
 		return err
 	}

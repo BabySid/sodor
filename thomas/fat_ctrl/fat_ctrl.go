@@ -63,7 +63,7 @@ func (fc *FatCtrl) getFatCtrlConn() (*grpc.ClientConn, error) {
 		h := fc.fatCtrlHosts[fc.fatCtrlIdx].IP + ":" + strconv.Itoa(fc.fatCtrlHosts[fc.fatCtrlIdx].port)
 		conn, err := grpc.Dial(h, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
-			log.Warnf("Dial host = %s failed. err = %s", h, err)
+			log.Warnf("Dial host=%s failed. err=%s", h, err)
 			continue
 		}
 		fc.fatCtrlIdx = (fc.fatCtrlIdx + 1) % len(fc.fatCtrlHosts)

@@ -23,7 +23,7 @@ var (
 func runTaskCommand(ctx *cli.Context) error {
 	t := task_runner.GetRunner()
 	if err := t.Run(); err != nil {
-		log.Fatalf("task_runner run failed. err = %s", err.Error())
+		log.Fatalf("task_runner run failed. err=%s", err.Error())
 	}
 	return nil
 }
