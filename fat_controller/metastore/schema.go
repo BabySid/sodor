@@ -120,7 +120,7 @@ type Thomas struct {
 	StartTime     int32                  `gorm:"not null"`
 	HeartBeatTime int32                  `gorm:"not null;column:heart_beat_time"`
 	ThomasType    string                 `gorm:"not null;default:'';size:32"`
-	Status        string                 `gorm:"not null;default:'';size:64"`
+	Status        string                 `gorm:"not null;default:'';size:256"`
 	Metrics       map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
 }
 

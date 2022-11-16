@@ -105,7 +105,7 @@ func fromThomas(in *Thomas, out *sodor.ThomasInfo) error {
 	out.Pid = int32(in.PID)
 	out.StartTime = in.StartTime
 	out.HeartBeatTime = in.HeartBeatTime
-	out.ThomasType = sodor.ThomasType(sodor.TaskType_value[in.ThomasType])
+	out.ThomasType = sodor.ThomasType(sodor.ThomasType_value[in.ThomasType])
 	out.Status = in.Status
 	metrics, err := structpb.NewStruct(in.Metrics)
 	if err != nil {
