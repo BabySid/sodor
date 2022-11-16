@@ -62,15 +62,14 @@ func (fc *FatCtrl) getFatCtrlConn() (*grpc.ClientConn, error) {
 	for {
 		h := fc.fatCtrlHosts[fc.fatCtrlIdx].IP + ":" + strconv.Itoa(fc.fatCtrlHosts[fc.fatCtrlIdx].port)
 		conn, err := grpc.Dial(h, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Warnf("Dial host=%s failed. err=%s", h, err)
-			continue
-		}
 		fc.fatCtrlIdx = (fc.fatCtrlIdx + 1) % len(fc.fatCtrlHosts)
+		if err == nil {
+			return conn, nil
+		}
+		log.Warnf("Dial thomas(host=%s) failed. err=%s", h, err)
 		if fc.fatCtrlIdx == initIdx {
 			break
 		}
-		return conn, nil
 	}
 
 	return nil, errors.New("cannot found valid fat_ctrl's address")
@@ -91,6 +90,7 @@ func (fc *FatCtrl) UpdateFatCtrlHost(ip string, port int) error {
 		port: port,
 	})
 
+	log.Infof("add new fat_ctrl's address. host=%s port=%d", ip, port)
 	return nil
 }
 
