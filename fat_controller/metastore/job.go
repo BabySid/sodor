@@ -20,7 +20,7 @@ func (ms *metaStore) JobExist(job *sodor.Job) (bool, error) {
 	}
 
 	var jobs apiJob
-	rs := ms.db.Model(&Job{}).Where(&j).Take(&jobs)
+	rs := ms.db.Model(&Job{}).Where(&j).Limit(1).Find(&jobs)
 	if rs.Error != nil {
 		return false, rs.Error
 	}
@@ -206,7 +206,7 @@ func (ms *metaStore) SelectJob(jID *sodor.Job) error {
 	gobase.True(jID.Id > 0)
 
 	var job Job
-	rs := ms.db.Take(&job, jID.Id)
+	rs := ms.db.Limit(1).Find(&job, jID.Id)
 	if rs.Error != nil {
 		return rs.Error
 	}

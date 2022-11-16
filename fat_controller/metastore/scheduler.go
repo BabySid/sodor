@@ -18,7 +18,7 @@ func (ms *metaStore) UpsertScheduler(stat *ScheduleState) error {
 
 	err := ms.db.Transaction(func(tx *gorm.DB) error {
 		var s ScheduleState
-		if rs := ms.db.Where(stat).Take(&s); rs.Error != nil {
+		if rs := ms.db.Where(stat).Limit(1).Find(&s); rs.Error != nil {
 			return rs.Error
 		}
 

@@ -63,7 +63,7 @@ func (ms *metaStore) getThomasByHostPort(host string, port int32) (uint, error) 
 	t.Port = int(port)
 
 	var ts apiThomas
-	rs := ms.db.Model(&Thomas{}).Where(&t).Take(&ts)
+	rs := ms.db.Model(&Thomas{}).Where(&t).Limit(1).Find(&ts)
 	if rs.Error != nil {
 		return 0, rs.Error
 	}
@@ -80,7 +80,7 @@ func (ms *metaStore) ThomasExistByID(id int32) (bool, error) {
 	t.ID = uint(id)
 
 	var ts apiThomas
-	rs := ms.db.Model(&Thomas{}).Where(&t).Take(&ts)
+	rs := ms.db.Model(&Thomas{}).Where(&t).Limit(1).Find(&ts)
 	if rs.Error != nil {
 		return false, rs.Error
 	}
@@ -112,12 +112,12 @@ func (ms *metaStore) ShowThomas(in *sodor.ThomasInfo, out *sodor.ThomasInstance)
 	gobase.True(in.Id > 0)
 
 	var thomas Thomas
-	rs := ms.db.Take(&thomas, in.Id)
+	rs := ms.db.Limit(1).Find(&thomas, in.Id)
 	if rs.Error != nil {
 		return rs.Error
 	}
 
-	if rs.RowsAffected == 0 {
+	if thomas.ID == 0 {
 		return ErrNotFound
 	}
 

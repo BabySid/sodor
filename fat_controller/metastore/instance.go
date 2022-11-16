@@ -73,7 +73,7 @@ func (ms *metaStore) SelectJobTaskInstance(job *sodor.JobInstance, tasks *sodor.
 	gobase.True(job.Id > 0)
 
 	var jobIns JobInstance
-	rs := ms.db.Take(&jobIns, job.Id)
+	rs := ms.db.Limit(1).Find(&jobIns, job.Id)
 	if rs.Error != nil {
 		return rs.Error
 	}
