@@ -25,7 +25,7 @@ func GetInstance() *routine {
 }
 
 func (r *routine) initJobs() error {
-	err := r.scheduler.AddJob("handShakeWithFatCtrl", "*/30 * * * * *", fat_ctrl.GetInstance())
+	err := r.scheduler.AddJob("handShakeWithFatCtrl", "*/20 * * * * *", fat_ctrl.GetInstance())
 	if err != nil {
 		return err
 	}

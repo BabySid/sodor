@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"os"
-	"sodor/fat_controller/config"
+	"sodor/thomas/config"
 )
 
 func (fc *FatCtrl) HandShake() {
@@ -38,8 +38,6 @@ func (fc *FatCtrl) HandShake() {
 		return
 	}
 	req.LatestMetrics = metrics
-
-	log.Infof("debug info: %+v", req)
 
 	_, err = cli.HandShake(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {
