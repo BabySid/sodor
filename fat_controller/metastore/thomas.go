@@ -12,7 +12,7 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 	_ = toThomas(req, &thomas)
 
 	rs := ms.db.Transaction(func(tx *gorm.DB) error {
-		if rs := tx.Model(&thomas).Select(thomas.UpdateFields()).Updates(thomas); rs.Error != nil {
+		if rs := tx.Model(&thomas).Updates(thomas.UpdateFields()); rs.Error != nil {
 			return rs.Error
 		}
 

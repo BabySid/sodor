@@ -134,6 +134,14 @@ func (t Thomas) TableName() string {
 	return "thomas"
 }
 
-func (t Thomas) UpdateFields() []string {
-	return []string{"Name", "Version", "Proto", "PID", "StartTime", "HeartBeatTime", "Metrics"}
+func (t Thomas) UpdateFields() map[string]interface{} {
+	return map[string]interface{}{
+		"Name":          t.Name,
+		"Version":       t.Version,
+		"Proto":         t.Proto,
+		"PID":           t.PID,
+		"StartTime":     t.StartTime,
+		"HeartBeatTime": t.HeartBeatTime,
+		"Metrics":       t.Metrics,
+	}
 }
