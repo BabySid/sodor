@@ -9,3 +9,7 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 # thomas
 ./thomas --data.path=../data --listen_addr=:9528 --log.path=../logs
 ```
+
+# Todo
+* Remove Thomas
+* Remove thomas instances which have been expired  
