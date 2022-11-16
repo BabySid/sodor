@@ -142,6 +142,7 @@ func (t Thomas) UpdateFields() map[string]interface{} {
 		"PID":           t.PID,
 		"StartTime":     t.StartTime,
 		"HeartBeatTime": t.HeartBeatTime,
+		"Status":        t.Status,
 		"Metrics":       t.Metrics,
 	}
 }
