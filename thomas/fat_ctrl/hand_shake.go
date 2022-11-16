@@ -39,6 +39,8 @@ func (fc *FatCtrl) HandShake() {
 	}
 	req.LatestMetrics = metrics
 
+	log.Infof("debug info: %+v", req)
+
 	_, err = cli.HandShake(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {
 		if s != nil {

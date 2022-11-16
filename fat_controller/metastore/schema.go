@@ -135,5 +135,5 @@ func (t Thomas) TableName() string {
 }
 
 func (t Thomas) UpdateFields() []string {
-	return []string{"Name", "Version", "Proto", "Host", "Port", "PID", "StartTime", "HeartBeatTime", "Metrics"}
+	return []string{"Name", "Version", "Proto", "PID", "StartTime", "HeartBeatTime", "Metrics"}
 }

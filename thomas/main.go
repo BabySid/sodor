@@ -12,7 +12,6 @@ import (
 	"github.com/urfave/cli/v2/altsrc"
 	"os"
 	"path/filepath"
-	"sodor/base"
 	"sodor/thomas/config"
 	"sodor/thomas/grpc"
 	"sodor/thomas/routine"
@@ -100,16 +99,13 @@ func runApp(ctx *cli.Context) error {
 	return server.Run()
 }
 
-func init() {
-	config.GetInstance().LocalIP = base.LocalHost
-	config.GetInstance().AppName = AppName
-	config.GetInstance().AppVersion = AppVersion
-}
-
 func initComponent(ctx *cli.Context) error {
 	if err := config.GetInstance().InitFromFlags(ctx); err != nil {
 		log.Fatalf("config init failed. err=%s", err)
 	}
+
+	config.GetInstance().AppName = AppName
+	config.GetInstance().AppVersion = AppVersion
 
 	if err := routine.GetInstance().Start(); err != nil {
 		log.Fatalf("routine start failed. err=%s", err)

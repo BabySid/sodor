@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/BabySid/gobase"
 	"github.com/urfave/cli/v2"
+	"sodor/base"
 	"strconv"
 	"strings"
 	"sync"
@@ -41,6 +42,8 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	port, err := strconv.Atoi(arr[1])
 	gobase.TrueF(err == nil, "invalid port of %s", addr)
 	c.Port = port
+
+	c.LocalIP = base.LocalHost
 
 	c.RetryInterval = time.Second * 5
 	return nil

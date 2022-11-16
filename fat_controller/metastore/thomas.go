@@ -209,5 +209,5 @@ func (ms *metaStore) ListAllThomas() (*sodor.ThomasInfos, error) {
 		all.ThomasInfos[i] = &ti
 	}
 
-	return nil, nil
+	return &all, nil
 }
