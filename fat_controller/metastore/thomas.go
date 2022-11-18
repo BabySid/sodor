@@ -12,7 +12,8 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 	_ = toThomas(req, &thomas)
 
 	rs := ms.db.Transaction(func(tx *gorm.DB) error {
-		if rs := tx.Model(&thomas).Where("ID", thomas.ID).Updates(thomas.UpdateFields()); rs.Error != nil {
+		gobase.True(thomas.ID > 0)
+		if rs := tx.Model(&thomas).Updates(thomas.UpdateFields()); rs.Error != nil {
 			return rs.Error
 		}
 
