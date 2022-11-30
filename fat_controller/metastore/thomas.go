@@ -1,10 +1,16 @@
 package metastore
 
 import (
+	"errors"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"time"
+)
+
+var (
+	NotFoundErr = errors.New("thomas not found")
 )
 
 func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
@@ -13,8 +19,15 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 
 	rs := ms.db.Transaction(func(tx *gorm.DB) error {
 		gobase.True(thomas.ID > 0)
-		if rs := tx.Model(&thomas).Updates(thomas.UpdateFields()); rs.Error != nil {
+		rs := tx.Model(&thomas).Updates(thomas.UpdateFields())
+
+		if rs.Error != nil {
 			return rs.Error
+		}
+
+		if rs.RowsAffected == 0 {
+			log.Warnf("unknown thomas. maybe it has been dropped. %+v", thomas)
+			return NotFoundErr
 		}
 
 		var tIns ThomasInstance

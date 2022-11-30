@@ -5,6 +5,7 @@ import (
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"os"
@@ -42,6 +43,10 @@ func (fc *FatCtrl) HandShake() {
 	_, err = cli.HandShake(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {
 		if s != nil {
+			if s.Code() == codes.NotFound {
+				// reset the thomasID because the thomasID has been dropped
+				fc.SetThomasID(0)
+			}
 			log.Warnf("HandShake to fat_ctrl failed. code=%d, msg=%s", s.Code(), s.Message())
 		}
 	} else {
