@@ -1,6 +1,7 @@
 package metastore
 
 import (
+	"encoding/json"
 	"gorm.io/gorm"
 	"time"
 )
@@ -135,6 +136,7 @@ func (t Thomas) TableName() string {
 }
 
 func (t Thomas) UpdateFields() map[string]interface{} {
+	bs, _ := json.Marshal(t.Metrics)
 	return map[string]interface{}{
 		"Name":          t.Name,
 		"Version":       t.Version,
@@ -143,6 +145,6 @@ func (t Thomas) UpdateFields() map[string]interface{} {
 		"StartTime":     t.StartTime,
 		"HeartBeatTime": t.HeartBeatTime,
 		"Status":        t.Status,
-		"Metrics":       t.Metrics,
+		"Metrics":       string(bs),
 	}
 }
