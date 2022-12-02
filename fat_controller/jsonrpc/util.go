@@ -73,6 +73,10 @@ func checkJobValid(job *sodor.Job, create bool) error {
 		s[task.Name] = i
 	}
 
+	if len(job.GetTasks()) > 1 && len(job.GetRelations()) == 0 {
+		return fmt.Errorf("task.relations must set when there are more than one tasks")
+	}
+
 	for _, rel := range job.GetRelations() {
 		if _, ok := s[rel.FromTask]; !ok {
 			return fmt.Errorf("from_task in relations is not exist")

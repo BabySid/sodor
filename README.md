@@ -11,5 +11,4 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 ```
 
 # Todo
-* Remove Thomas
-* Remove thomas instances which have been expired  
+ 

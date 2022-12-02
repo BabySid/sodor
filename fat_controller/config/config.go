@@ -10,9 +10,10 @@ import (
 )
 
 type config struct {
-	LocalIP      string
-	Port         int
-	MetaStoreUri string
+	LocalIP           string
+	Port              int
+	MetaStoreUri      string
+	MaxThomasInstance uint32
 
 	AppName    string
 	AppVersion string
@@ -40,6 +41,8 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	port, err := strconv.Atoi(arr[1])
 	gobase.TrueF(err == nil, "invalid port of %s", addr)
 	c.Port = port
+
+	c.MaxThomasInstance = 64
 
 	return nil
 }

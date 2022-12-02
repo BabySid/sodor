@@ -76,8 +76,10 @@ func (ms *metaStore) InsertJob(job *sodor.Job) error {
 			mRels = append(mRels, rel)
 		}
 
-		if rst := tx.Create(&mRels); rst.Error != nil {
-			return rst.Error
+		if len(mRels) > 0 {
+			if rst := tx.Create(&mRels); rst.Error != nil {
+				return rst.Error
+			}
 		}
 
 		if job.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {

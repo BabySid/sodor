@@ -6,6 +6,7 @@ import (
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"sodor/fat_controller/config"
 	"time"
 )
 
@@ -33,7 +34,13 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 		var tIns ThomasInstance
 		tIns.ThomasID = int32(thomas.ID)
 		tIns.Metrics = thomas.Metrics
-		if rs := tx.Create(&tIns); rs.Error != nil {
+		if rs = tx.Create(&tIns); rs.Error != nil {
+			return rs.Error
+		}
+
+		subQuery := tx.Model(&ThomasInstance{}).Select("ID").Where("ID = ?", tIns.ThomasID).
+			Order("ID desc").Offset(int(config.GetInstance().MaxThomasInstance)).Limit(1024)
+		if rs = tx.Where("ID in (?)", subQuery).Delete(&ThomasInstance{}); rs.Error != nil {
 			return rs.Error
 		}
 
