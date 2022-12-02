@@ -38,9 +38,10 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 			return rs.Error
 		}
 
-		subQuery := tx.Model(&ThomasInstance{}).Select("ID").Where("ID = ?", tIns.ThomasID).
+		subQuery := tx.Model(&ThomasInstance{}).Select("ID").Where("ThomasID = ?", tIns.ThomasID).
 			Order("ID desc").Offset(int(config.GetInstance().MaxThomasInstance)).Limit(1024)
-		if rs = tx.Where("ID in (?)", subQuery).Delete(&ThomasInstance{}); rs.Error != nil {
+		sub := tx.Table("(?) as tbl", subQuery).Select("tbl.id")
+		if rs = tx.Where("ID in (?)", sub).Delete(&ThomasInstance{}); rs.Error != nil {
 			return rs.Error
 		}
 
