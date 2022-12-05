@@ -6,6 +6,7 @@ import (
 	"github.com/go-cmd/cmd"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 func createCmd(dir string) *cmd.Cmd {
@@ -15,7 +16,8 @@ func createCmd(dir string) *cmd.Cmd {
 		BeforeExec: []func(cmd *exec.Cmd){gobase.SetChildrenProcessDetached},
 	}
 
-	script := fmt.Sprintf("%s ----task.identity=run_task &>log", os.Args[0])
+	bin, _ := filepath.Abs(os.Args[0])
+	script := fmt.Sprintf("%s ----task.identity=run_task &>log", bin)
 	c := cmd.NewCmdOptions(opt, "bash", "-c", script)
 	c.Dir = dir
 

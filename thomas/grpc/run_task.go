@@ -24,9 +24,9 @@ func (s *Service) RunTask(ctx context.Context, task *sodor.RunTaskRequest) (*sod
 
 	go func() {
 		_ = <-c.Start()
-		resp, _ := task_runner.GetTaskEnv().GetTaskResponse(c.ID)
+		resp, err := task_runner.GetTaskEnv().GetTaskResponse(c.ID)
 		if resp == nil {
-			log.Warnf("GetTaskResponse(%s) return nil resp", c.ID)
+			log.Warnf("GetTaskResponse(%s) return nil resp. err = %v", c.ID, err)
 			return
 		}
 
