@@ -189,7 +189,7 @@ func (ms *metaStore) SelectValidThomas(host string) (*Thomas, error) {
 	var thomas Thomas
 	thomas.Host = host
 	//ms.db.
-	if rs := ms.db.Scopes(filterValidThomas).Last(&thomas); rs.Error != nil {
+	if rs := ms.db.Scopes(filterValidThomas).Order("id desc").Limit(1).Find(&thomas); rs.Error != nil {
 		return nil, rs.Error
 	}
 	return &thomas, nil
