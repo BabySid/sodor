@@ -74,6 +74,7 @@ func (jc *jobContext) Run() {
 		var taskIns sodor.TaskInstance
 		taskIns.TaskId = t.Id
 		taskIns.JobId = t.JobId
+		taskIns.StartTs = int32(time.Now().Unix())
 		taskInstances[i] = &taskIns
 	}
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
@@ -211,7 +212,7 @@ func (jc *jobContext) runTask(jobIns int32, taskIns int32, task *sodor.Task) {
 }
 
 func (jc *jobContext) terminalJob(jobInsID int32, taskInsID int32, task *sodor.Task, cause error) {
-	var taskIns sodor.TaskInstance
+	taskIns := jc.instances[jobInsID].taskInstances[taskInsID]
 	taskIns.Id = taskInsID
 	taskIns.JobId = task.JobId
 	taskIns.TaskId = task.Id
@@ -221,7 +222,7 @@ func (jc *jobContext) terminalJob(jobInsID int32, taskInsID int32, task *sodor.T
 	taskIns.ExitCode = -1
 	taskIns.ExitMsg = cause.Error()
 
-	_, err := jc.UpdateTaskInstance(&taskIns)
+	_, err := jc.UpdateTaskInstance(taskIns)
 	if err != nil {
 		log.Warnf("UpdateTaskInstance failed. err=%s", err)
 	}
