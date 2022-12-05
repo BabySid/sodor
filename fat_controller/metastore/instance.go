@@ -15,24 +15,25 @@ func (ms *metaStore) InsertJobTaskInstance(job *sodor.JobInstance, tasks []*sodo
 			return err
 		}
 
-		if rs := ms.db.Create(&ins); rs.Error != nil {
+		if rs := tx.Create(&ins); rs.Error != nil {
 			return rs.Error
 		}
 
 		job.Id = int32(ins.ID)
 
 		for _, t := range tasks {
+			t.JobInstanceId = job.Id
+
 			var ins TaskInstance
 			if err := toTaskInstance(t, &ins); err != nil {
 				return err
 			}
 
-			if rs := ms.db.Create(&ins); rs.Error != nil {
+			if rs := tx.Create(&ins); rs.Error != nil {
 				return rs.Error
 			}
 
 			t.Id = int32(ins.ID)
-			t.JobInstanceId = job.Id
 		}
 
 		return nil
@@ -50,7 +51,7 @@ func (ms *metaStore) UpdateJobTaskInstance(job *sodor.JobInstance, task *sodor.T
 				return err
 			}
 
-			if rst := ms.db.Save([]*JobInstance{&ins}); rst.Error != nil {
+			if rst := tx.Save([]*JobInstance{&ins}); rst.Error != nil {
 				return rst.Error
 			}
 		}
@@ -60,7 +61,7 @@ func (ms *metaStore) UpdateJobTaskInstance(job *sodor.JobInstance, task *sodor.T
 			return err
 		}
 
-		if rst := ms.db.Save([]*TaskInstance{&ins}); rst.Error != nil {
+		if rst := tx.Save([]*TaskInstance{&ins}); rst.Error != nil {
 			return rst.Error
 		}
 		return nil
