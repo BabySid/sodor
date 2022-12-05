@@ -11,5 +11,4 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 ```
 
 # Todo
-* if thomas restart after fat_ctrl, fat_ctrl will never reconnect it ?
 * SelectValidThomas return error: no record found
