@@ -51,7 +51,7 @@ func (ms *metaStore) UpdateJobTaskInstance(job *sodor.JobInstance, task *sodor.T
 				return err
 			}
 
-			if rst := tx.Save([]*JobInstance{&ins}); rst.Error != nil {
+			if rst := tx.Model(&ins).Select(ins.UpdateFields()).Updates(ins); rst.Error != nil {
 				return rst.Error
 			}
 		}
@@ -61,7 +61,7 @@ func (ms *metaStore) UpdateJobTaskInstance(job *sodor.JobInstance, task *sodor.T
 			return err
 		}
 
-		if rst := tx.Save([]*TaskInstance{&ins}); rst.Error != nil {
+		if rst := tx.Model(&ins).Select(ins.UpdateFields()).Updates(ins); rst.Error != nil {
 			return rst.Error
 		}
 		return nil

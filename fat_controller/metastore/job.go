@@ -103,50 +103,69 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 	gobase.True(job.Id > 0)
 
 	err := ms.db.Transaction(func(tx *gorm.DB) error {
+		// 1. update job meta
 		var mJob Job
 		if err := toJob(job, &mJob); err != nil {
 			return err
 		}
-		// use []*Job to generate sqls like `insert xxx on duplicated key(id) ...`
-		if rst := tx.Save([]*Job{&mJob}); rst.Error != nil {
+
+		if rst := tx.Model(&mJob).Select(mJob.UpdateFields()).Updates(mJob); rst.Error != nil {
 			return rst.Error
 		}
 
-		mTasks := make([]*Task, len(job.GetTasks()))
-		for i, t := range job.GetTasks() {
+		// 2. update task
+		newTasks := make([]*Task, 0)
+		updatedTasks := make([]*Task, 0)
+		for _, t := range job.GetTasks() {
 			var task Task
 			if err := toTask(t, job.Id, &task); err != nil {
 				return err
 			}
-			mTasks[i] = &task
-		}
-		if rst := tx.Save(&mTasks); rst.Error != nil {
-			return rst.Error
-		}
-
-		tasksToRetain := make([]int32, 0)
-		for i, t := range mTasks {
-			job.Tasks[i].JobId = job.Id
-			job.Tasks[i].Id = int32(t.ID)
-			tasksToRetain = append(tasksToRetain, job.Tasks[i].Id)
+			if t.Id == 0 {
+				newTasks = append(newTasks, &task)
+			} else {
+				updatedTasks = append(updatedTasks, &task)
+			}
 		}
 
-		// Delete the obsolete task the is valid in history
+		tasksToRetain := make([]uint, 0)
+		if len(newTasks) > 0 {
+			if rst := tx.Create(&newTasks); rst.Error != nil {
+				return rst.Error
+			}
+
+			for _, t := range newTasks {
+				tasksToRetain = append(tasksToRetain, t.ID)
+			}
+		}
+
+		for _, task := range updatedTasks {
+			if rst := tx.Model(task).Select(task.UpdateFields()).Updates(task); rst.Error != nil {
+				return rst.Error
+			}
+
+			tasksToRetain = append(tasksToRetain, task.ID)
+		}
+
+		// Delete the obsolete task that is valid in history
 		if rs := tx.Where("job_id = ? and id not in ?", job.Id, tasksToRetain).Delete(&Task{}); rs.Error != nil {
 			return rs.Error
 		}
 
+		// 3. update relation
 		// Because the relational does not have other associated attributes, it can be deleted directly
 		if rs := tx.Where("job_id = ?", job.Id).Delete(&TaskRelation{}); rs.Error != nil {
 			return rs.Error
 		}
 
 		mRels := make([]TaskRelation, 0)
+		allTasks := make([]*Task, 0)
+		allTasks = append(append(allTasks, newTasks...), updatedTasks...)
 		for _, r := range job.GetRelations() {
 			var rel TaskRelation
 			rel.JobID = int32(mJob.ID)
-			rel.FromTaskID = int32(findTaskID(mTasks, r.FromTask))
-			rel.ToTaskID = int32(findTaskID(mTasks, r.ToTask))
+			rel.FromTaskID = int32(findTaskID(allTasks, r.FromTask))
+			rel.ToTaskID = int32(findTaskID(allTasks, r.ToTask))
 
 			mRels = append(mRels, rel)
 		}
@@ -157,6 +176,7 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 			}
 		}
 
+		// 4. update scheduler state
 		if rst := tx.Where(&ScheduleState{JobID: job.Id, Host: base.LocalHost}).Delete(ScheduleState{}); rst.Error != nil {
 			return rst.Error
 		}

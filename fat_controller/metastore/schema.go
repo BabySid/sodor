@@ -42,6 +42,14 @@ type Job struct {
 	//AlertGroupID int32  `gorm:"not null"`
 }
 
+func (t Job) UpdateFields() []string {
+	return []string{
+		"Name",
+		"SchedulerMode",
+		"RoutineSpec",
+	}
+}
+
 type Task struct {
 	gorm.Model
 	JobID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
@@ -49,6 +57,16 @@ type Task struct {
 	RunningHosts string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
 	Type         string `gorm:"not null;default:'';size:16"`
 	Script       string `gorm:"not null;default:'';type:mediumtext"`
+}
+
+func (t Task) UpdateFields() []string {
+	return []string{
+		"JobID",
+		"Name",
+		"RunningHosts",
+		"Type",
+		"Script",
+	}
 }
 
 type TaskRelation struct {
@@ -94,6 +112,17 @@ type JobInstance struct {
 	ExitMsg    string `gorm:"not null;default:''"`
 }
 
+func (t JobInstance) UpdateFields() []string {
+	return []string{
+		"JobID",
+		"ScheduleTS",
+		"StartTS",
+		"StopTS",
+		"ExitCode",
+		"ExitMsg",
+	}
+}
+
 type TaskInstance struct {
 	gorm.Model
 	JobID         int32  `gorm:"not null;uniqueIndex:uniq_task"`
@@ -107,6 +136,21 @@ type TaskInstance struct {
 	ExitMsg       string `gorm:"not null;default:''"`
 	//InputVars     string `gorm:"not null;default:'';type:mediumtext"` // json
 	OutputVars map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
+}
+
+func (t TaskInstance) UpdateFields() []string {
+	return []string{
+		"JobID",
+		"TaskID",
+		"JobInstanceID",
+		"StartTS",
+		"StopTS",
+		"Host",
+		"PID",
+		"ExitCode",
+		"ExitMsg",
+		"OutputVars",
+	}
 }
 
 type Thomas struct {
@@ -146,6 +190,3 @@ func (t Thomas) UpdateFields() []string {
 		"Metrics",
 	}
 }
-
-
-
