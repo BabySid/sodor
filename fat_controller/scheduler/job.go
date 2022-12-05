@@ -173,7 +173,7 @@ func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (int32, *sodor
 	var task *sodor.Task
 
 	for id, t := range jc.instances[jobIns].taskInstances {
-		if t.Id == taskId {
+		if t.TaskId == taskId {
 			taskIns = id
 		}
 	}
