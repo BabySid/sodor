@@ -12,3 +12,4 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 
 # Todo
 * setup failed in thomas because of mkdir failed (umask)
+* if thomas restart after fat_ctrl, fat_ctrl will never reconnect it ?

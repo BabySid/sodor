@@ -77,9 +77,9 @@ func (e *taskEnv) LoadTasksStatus() error {
 
 	taskInstances := make(map[string]*sodor.TaskInstance)
 	e.db.Traversal(func(k string, v interface{}) error {
-		resp, _ := e.GetTaskResponse(k)
+		resp, err := e.GetTaskResponse(k)
 		if resp == nil {
-			log.Warnf("GetTaskResponse(%s) return nil resp", k)
+			log.Warnf("GetTaskResponse(%s) return nil resp. err=%v", k, err)
 			return nil
 		}
 

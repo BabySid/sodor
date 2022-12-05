@@ -17,7 +17,7 @@ func createCmd(dir string) *cmd.Cmd {
 	}
 
 	bin, _ := filepath.Abs(os.Args[0])
-	script := fmt.Sprintf("%s --task.identity=run_task &>log", bin)
+	script := fmt.Sprintf("%s run_task --task.identity=%s &>log", bin, dir)
 	c := cmd.NewCmdOptions(opt, "bash", "-c", script)
 	c.Dir = dir
 
