@@ -151,8 +151,10 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 			mRels = append(mRels, rel)
 		}
 
-		if rst := tx.Create(&mRels); rst.Error != nil {
-			return rst.Error
+		if len(mRels) > 0 {
+			if rst := tx.Create(&mRels); rst.Error != nil {
+				return rst.Error
+			}
 		}
 
 		if rst := tx.Delete(&ScheduleState{JobID: job.Id, Host: base.LocalHost}); rst.Error != nil {
