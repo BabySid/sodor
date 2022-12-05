@@ -109,7 +109,9 @@ func (e *taskEnv) updateTaskInstances(taskInstances map[string]*sodor.TaskInstan
 }
 
 func (e *taskEnv) Remove(task string) {
-	_ = e.db.remove(task)
+	if err := e.db.remove(task); err != nil {
+		log.Warnf("taskEnv.db.remove(%s) failed", task)
+	}
 }
 
 func (e *taskEnv) GetTaskResponse(taskPath string) (*sodor.TaskInstance, error) {
