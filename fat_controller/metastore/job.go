@@ -157,7 +157,7 @@ func (ms *metaStore) UpdateJob(job *sodor.Job) error {
 			}
 		}
 
-		if rst := tx.Delete(&ScheduleState{JobID: job.Id, Host: base.LocalHost}); rst.Error != nil {
+		if rst := tx.Where(&ScheduleState{JobID: job.Id, Host: base.LocalHost}).Delete(ScheduleState{}); rst.Error != nil {
 			return rst.Error
 		}
 
@@ -196,7 +196,7 @@ func (ms *metaStore) DeleteJob(jID *sodor.Job) error {
 			return rs.Error
 		}
 
-		if rst := tx.Delete(&ScheduleState{JobID: jID.Id, Host: base.LocalHost}); rst.Error != nil {
+		if rst := tx.Where(&ScheduleState{JobID: jID.Id, Host: base.LocalHost}).Delete(ScheduleState{}); rst.Error != nil {
 			return rst.Error
 		}
 		return nil
