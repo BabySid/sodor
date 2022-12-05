@@ -27,7 +27,7 @@ type TaskRunner struct {
 const (
 	requestFile  = "./task_request.json"
 	responseFile = "./task_response.json"
-	defaultPerm  = 0666
+	defaultPerm  = os.ModePerm
 
 	OKMsg       = "OK"
 	SystemError = 999
