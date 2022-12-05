@@ -151,7 +151,7 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 	}
 
 	var err error
-	if nextTask == 0 {
+	if nextTask != 0 {
 		err = metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
 	} else {
 		err = metastore.GetInstance().UpdateJobTaskInstance(instances.curInstance, ins)
