@@ -96,7 +96,7 @@ func (ms *metaStore) UpdateJobTaskInstance(job *sodor.JobInstance, task *sodor.T
 	return err
 }
 
-func (ms *metaStore) SelectJobTaskInstance(job *sodor.JobInstance, tasks *sodor.TaskInstances) error {
+func (ms *metaStore) SelectInstanceByJobInsID(job *sodor.JobInstance, tasks *sodor.TaskInstances) error {
 	gobase.True(job.Id > 0)
 
 	var jobIns JobInstance
@@ -128,4 +128,44 @@ func (ms *metaStore) SelectJobTaskInstance(job *sodor.JobInstance, tasks *sodor.
 	}
 
 	return nil
+}
+
+func (ms *metaStore) SelectInstanceByJobID(jobID int32) (*sodor.JobTaskInstances, error) {
+	var jobIns []*JobInstance
+	rs := ms.db.Where(&JobInstance{JobID: jobID}).Find(&jobIns)
+	if rs.Error != nil {
+		return nil, rs.Error
+	}
+
+	var taskIns []*TaskInstance
+	rs = ms.db.Where(&TaskInstance{JobID: jobID}).Find(&taskIns)
+	if rs.Error != nil {
+		return nil, rs.Error
+	}
+
+	var jtIns sodor.JobTaskInstances
+	jtIns.JobInstances.JobInstances = make([]*sodor.JobInstance, 0)
+	jtIns.TaskInstances.TaskInstances = make([]*sodor.TaskInstance, 0)
+
+	for _, ins := range jobIns {
+		var target sodor.JobInstance
+		err := fromJobInstance(ins, &target)
+		if err != nil {
+			return nil, err
+		}
+
+		jtIns.JobInstances.JobInstances = append(jtIns.JobInstances.JobInstances, &target)
+	}
+
+	for _, ins := range taskIns {
+		var target sodor.TaskInstance
+		err := fromTaskInstance(ins, &target)
+		if err != nil {
+			return nil, err
+		}
+
+		jtIns.TaskInstances.TaskInstances = append(jtIns.TaskInstances.TaskInstances, &target)
+	}
+
+	return &jtIns, nil
 }

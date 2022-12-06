@@ -229,7 +229,7 @@ func (jc *jobContext) terminalJob(jobInsID int32, taskInsID int32, task *sodor.T
 }
 
 func (jc *jobContext) loadInstanceFromMetaStore(job *sodor.JobInstance, task *sodor.TaskInstances) error {
-	err := metastore.GetInstance().SelectJobTaskInstance(job, task)
+	err := metastore.GetInstance().SelectInstanceByJobInsID(job, task)
 	return err
 }
 
