@@ -132,13 +132,13 @@ func (ms *metaStore) SelectInstanceByJobInsID(job *sodor.JobInstance, tasks *sod
 
 func (ms *metaStore) SelectInstanceByJobID(jobID int32) (*sodor.JobTaskInstances, error) {
 	var jobIns []*JobInstance
-	rs := ms.db.Where(&JobInstance{JobID: jobID}).Find(&jobIns)
+	rs := ms.db.Model(&JobInstance{}).Where(&JobInstance{JobID: jobID}).Find(&jobIns)
 	if rs.Error != nil {
 		return nil, rs.Error
 	}
 
 	var taskIns []*TaskInstance
-	rs = ms.db.Where(&TaskInstance{JobID: jobID}).Find(&taskIns)
+	rs = ms.db.Model(&TaskInstance{}).Where(&TaskInstance{JobID: jobID}).Find(&taskIns)
 	if rs.Error != nil {
 		return nil, rs.Error
 	}
