@@ -44,7 +44,7 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	c.Port = port
 
 	c.MaxThomasInstance = 64
-	c.MaxJobInstance = 64
+	c.MaxJobInstance = 4
 
 	return nil
 }
