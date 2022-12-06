@@ -144,7 +144,9 @@ func (ms *metaStore) SelectInstanceByJobID(jobID int32) (*sodor.JobTaskInstances
 	}
 
 	var jtIns sodor.JobTaskInstances
+	jtIns.JobInstances = &sodor.JobInstances{}
 	jtIns.JobInstances.JobInstances = make([]*sodor.JobInstance, 0)
+	jtIns.TaskInstances = &sodor.TaskInstances{}
 	jtIns.TaskInstances.TaskInstances = make([]*sodor.TaskInstance, 0)
 
 	for _, ins := range jobIns {
