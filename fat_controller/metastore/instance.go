@@ -4,6 +4,7 @@ import (
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"gorm.io/gorm"
+	"sodor/fat_controller/config"
 )
 
 func (ms *metaStore) InsertJobTaskInstance(job *sodor.JobInstance, tasks []*sodor.TaskInstance) error {
@@ -34,6 +35,31 @@ func (ms *metaStore) InsertJobTaskInstance(job *sodor.JobInstance, tasks []*sodo
 			}
 
 			t.Id = int32(ins.ID)
+		}
+
+		// delete long-age records
+		if config.GetInstance().MaxJobInstance <= 0 {
+			return nil
+		}
+
+		var jobIds []uint
+		rs := tx.Model(&JobInstance{}).Where(JobInstance{JobID: job.JobId}).
+			Order("id desc").Offset(int(config.GetInstance().MaxJobInstance)).Limit(1024).
+			Pluck("id", &jobIds)
+		if rs.Error != nil {
+			return rs.Error
+		}
+
+		if len(jobIds) == 0 {
+			return nil
+		}
+
+		if rs = tx.Where("id in (?)", jobIds).Delete(&JobInstance{}); rs.Error != nil {
+			return rs.Error
+		}
+
+		if rs = tx.Where("job_instance_id in (?)", jobIds).Delete(&TaskInstance{}); rs.Error != nil {
+			return rs.Error
 		}
 
 		return nil

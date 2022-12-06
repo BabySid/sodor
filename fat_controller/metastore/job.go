@@ -204,21 +204,30 @@ func (ms *metaStore) DeleteJob(jID *sodor.Job) error {
 		var job Job
 		job.ID = uint(jID.Id)
 
-		if rs := tx.Delete(&job); rs.Error != nil {
+		if rs := tx.Where(job).Delete(&Job{}); rs.Error != nil {
 			return rs.Error
 		}
 
-		if rs := tx.Where("job_id = ?", job.ID).Delete(&Task{}); rs.Error != nil {
+		if rs := tx.Where(Task{JobID: int32(job.ID)}).Delete(&Task{}); rs.Error != nil {
 			return rs.Error
 		}
 
-		if rs := tx.Where("job_id = ?", job.ID).Delete(&TaskRelation{}); rs.Error != nil {
+		if rs := tx.Where(TaskRelation{JobID: int32(job.ID)}).Delete(&TaskRelation{}); rs.Error != nil {
 			return rs.Error
 		}
 
-		if rst := tx.Where(&ScheduleState{JobID: jID.Id, Host: base.LocalHost}).Delete(ScheduleState{}); rst.Error != nil {
-			return rst.Error
+		if rs := tx.Where(&ScheduleState{JobID: jID.Id, Host: base.LocalHost}).Delete(ScheduleState{}); rs.Error != nil {
+			return rs.Error
 		}
+
+		if rs := tx.Where(JobInstance{JobID: int32(job.ID)}).Delete(&JobInstance{}); rs.Error != nil {
+			return rs.Error
+		}
+
+		if rs := tx.Where(TaskInstance{JobID: int32(job.ID)}).Delete(&TaskInstance{}); rs.Error != nil {
+			return rs.Error
+		}
+
 		return nil
 	})
 

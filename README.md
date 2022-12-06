@@ -11,4 +11,3 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 ```
 
 # Todo
-* SelectValidThomas return error: no record found

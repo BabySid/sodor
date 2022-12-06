@@ -38,6 +38,10 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 			return rs.Error
 		}
 
+		// delete long-age records
+		if config.GetInstance().MaxThomasInstance <= 0 {
+			return nil
+		}
 		subQuery := tx.Model(&ThomasInstance{}).Select("id").Where("thomas_id = ?", tIns.ThomasID).
 			Order("id desc").Offset(int(config.GetInstance().MaxThomasInstance)).Limit(1024)
 		sub := tx.Table("(?) as tbl", subQuery).Select("tbl.id")
@@ -175,7 +179,7 @@ func (ms *metaStore) DropThomas(thomas *sodor.ThomasInfo) error {
 			return rs.Error
 		}
 
-		if rs := tx.Where("thomas_id = ?", t.ID).Delete(&ThomasInstance{}); rs.Error != nil {
+		if rs := tx.Where(ThomasInstance{ThomasID: int32(t.ID)}).Delete(&ThomasInstance{}); rs.Error != nil {
 			return rs.Error
 		}
 

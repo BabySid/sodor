@@ -14,6 +14,7 @@ type config struct {
 	Port              int
 	MetaStoreUri      string
 	MaxThomasInstance uint32
+	MaxJobInstance    uint32
 
 	AppName    string
 	AppVersion string
@@ -43,6 +44,7 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	c.Port = port
 
 	c.MaxThomasInstance = 64
+	c.MaxJobInstance = 64
 
 	return nil
 }
