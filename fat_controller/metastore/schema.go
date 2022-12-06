@@ -1,7 +1,6 @@
 package metastore
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -33,8 +32,27 @@ type TableModel struct {
 	UpdatedAt time.Time
 }
 
+type AlertGroup struct {
+	TableModel
+	Name         string                          `gorm:"not null;size:64;uniqueIndex:uniq_alert_group"`
+	PluginValues map[uint]map[string]interface{} `gorm:"not null;serializer:json;type:text"`
+}
+
+type AlertPlugin struct {
+	TableModel
+	Catalog string                 `gorm:"not null;size:32;uniqueIndex:uniq_plugin"`
+	Params  map[string]interface{} `gorm:"not null;serializer:json;default:'';type:text"`
+}
+
+type AlertHistory struct {
+	TableModel
+	GroupID     int32  `gorm:"not null"`
+	PluginID    int32  `gorm:"not null"`
+	ParamsValue string `gorm:"not null;type:text"`
+}
+
 type Job struct {
-	gorm.Model
+	TableModel
 	Name          string `gorm:"not null;size:64;unique"`
 	SchedulerMode string `gorm:"not null;default:''"`
 	RoutineSpec   string `gorm:"not null;default:'';size:128"` // {"ct_spec":"* * *"}
@@ -51,7 +69,7 @@ func (t Job) UpdateFields() []string {
 }
 
 type Task struct {
-	gorm.Model
+	TableModel
 	JobID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	Name         string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
 	RunningHosts string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
@@ -70,29 +88,10 @@ func (t Task) UpdateFields() []string {
 }
 
 type TaskRelation struct {
-	gorm.Model
+	TableModel
 	JobID      int32 `gorm:"not null"`
 	FromTaskID int32 `gorm:"not null"`
 	ToTaskID   int32 `gorm:"not null"`
-}
-
-type AlertGroup struct {
-	gorm.Model
-	Name      string `gorm:"not null;size:64;uniqueIndex:uniq_alter_group"`
-	PluginIDs string `gorm:"not null;size:64;column:plugin_ids"` // json [1,2]
-}
-
-type AlertPlugin struct {
-	gorm.Model
-	Catalog string `gorm:"not null;size:32;uniqueIndex:uniq_plugin"`
-	Params  string `gorm:"not null;type:text"`
-}
-
-type AlertHistory struct {
-	gorm.Model
-	GroupID     int32  `gorm:"not null"`
-	PluginID    int32  `gorm:"not null"`
-	ParamsValue string `gorm:"not null;type:text"`
 }
 
 // ScheduleState stores jobs with a crontab-scheduler
@@ -103,7 +102,7 @@ type ScheduleState struct {
 }
 
 type JobInstance struct {
-	gorm.Model
+	TableModel
 	JobID      int32  `gorm:"not null"`
 	ScheduleTS int32  `gorm:"not null:default:0"`
 	StartTS    int32  `gorm:"not null;default:0"`
@@ -124,7 +123,7 @@ func (t JobInstance) UpdateFields() []string {
 }
 
 type TaskInstance struct {
-	gorm.Model
+	TableModel
 	JobID         int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	TaskID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	JobInstanceID int32  `gorm:"not null;uniqueIndex:uniq_task"`
