@@ -16,7 +16,6 @@ func init() {
 		&Task{},
 		&TaskRelation{},
 		&AlertGroup{},
-		&AlertPlugin{},
 		&AlertHistory{},
 		&ScheduleState{},
 		&JobInstance{},
@@ -34,21 +33,16 @@ type TableModel struct {
 
 type AlertGroup struct {
 	TableModel
-	Name         string                          `gorm:"not null;size:64;uniqueIndex:uniq_alert_group"`
-	PluginValues map[uint]map[string]interface{} `gorm:"not null;serializer:json;type:text"`
-}
-
-type AlertPlugin struct {
-	TableModel
-	Catalog string                 `gorm:"not null;size:32;uniqueIndex:uniq_plugin"`
-	Params  map[string]interface{} `gorm:"not null;serializer:json;default:'';type:text"`
+	Name string `gorm:"not null;size:64;uniqueIndex:uniq_alert_group"`
+	// pluginName => properties
+	PluginValues map[string]map[string]interface{} `gorm:"not null;serializer:json;type:text"`
 }
 
 type AlertHistory struct {
 	TableModel
-	GroupID     int32  `gorm:"not null"`
-	PluginID    int32  `gorm:"not null"`
-	ParamsValue string `gorm:"not null;type:text"`
+	GroupID     int32                  `gorm:"not null"`
+	PluginName  string                 `gorm:"not null;size:64"`
+	ParamsValue map[string]interface{} `gorm:"not null;serializer:json;type:text"`
 }
 
 type Job struct {
@@ -57,7 +51,7 @@ type Job struct {
 	SchedulerMode string `gorm:"not null;default:''"`
 	RoutineSpec   string `gorm:"not null;default:'';size:128"` // {"ct_spec":"* * *"}
 	//AlertRule    string `gorm:"not null;default:'';type:text"` // json
-	//AlertGroupID int32  `gorm:"not null"`
+	AlertGroupID int32 `gorm:"not null"`
 }
 
 func (t Job) UpdateFields() []string {
