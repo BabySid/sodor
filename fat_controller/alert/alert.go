@@ -15,7 +15,7 @@ type alertFactory struct {
 	alerts map[string]alert
 }
 
-func (af *alertFactory) GetAlerts() []alert {
+func (af *alertFactory) GetAlertPlugins() []alert {
 	rs := make([]alert, 0)
 
 	for _, v := range af.alerts {
@@ -25,7 +25,7 @@ func (af *alertFactory) GetAlerts() []alert {
 	return rs
 }
 
-func (af *alertFactory) GetAlert(name string) alert {
+func (af *alertFactory) GetAlertPlugin(name string) alert {
 	if a, ok := af.alerts[name]; ok {
 		return a
 	}
