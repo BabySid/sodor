@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
-	"sodor/fat_controller/config"
+	"sodor/fat_controller/util"
 	"strconv"
 )
 
@@ -17,31 +17,28 @@ type Thomas struct {
 	Port int
 }
 
-func (t *Thomas) HandShake(id int32) error {
+func (t *Thomas) HandShake(id int32) (*sodor.ThomasInfo, error) {
 	conn, err := t.dial()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer conn.Close()
 
 	cli := sodor.NewThomasClient(conn)
 
-	var req sodor.FatCtrlInfo
-	req.Id = id
-	req.Name = config.GetInstance().AppName
-	req.Version = config.GetInstance().AppVersion
-	req.Host = config.GetInstance().LocalIP
-	req.Port = int32(config.GetInstance().Port)
+	var req sodor.HandShakeWithThomasRequest
+	req.Thomas = &sodor.ThomasInfo{Id: id}
+	req.FatCtrls = util.BuildFatCtrlInfos()
 
-	_, err = cli.HandShake(context.Background(), &req)
+	resp, err := cli.HandShake(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {
 		if s != nil {
 			log.Warnf("HandShake to thomas failed. code=%d, msg=%s", s.Code(), s.Message())
-			return errors.New(s.String())
+			return nil, errors.New(s.String())
 		}
 	}
 
-	return err
+	return resp, err
 }
 
 func (t *Thomas) RunTask(jobIns int32, taskIns int32, task *sodor.Task) error {

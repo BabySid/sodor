@@ -2,22 +2,19 @@ package fat_ctrl
 
 import (
 	"errors"
+	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"sodor/thomas/config"
 	"strconv"
 	"sync"
-	"time"
 )
 
 type FatCtrl struct {
-	thomasID int32
-
 	mux          sync.Mutex
 	fatCtrlHosts []host
 	fatCtrlIdx   int
-
-	startTime int32
 }
 
 type host struct {
@@ -33,10 +30,8 @@ var (
 func GetInstance() *FatCtrl {
 	once.Do(func() {
 		singleton = &FatCtrl{
-			thomasID:     0,
 			fatCtrlHosts: make([]host, 0),
 			fatCtrlIdx:   0,
-			startTime:    int32(time.Now().Unix()),
 		}
 	})
 	return singleton
@@ -50,7 +45,7 @@ func (fc *FatCtrl) getFatCtrlConn() (*grpc.ClientConn, error) {
 	fc.mux.Lock()
 	defer fc.mux.Unlock()
 
-	if fc.thomasID == 0 {
+	if config.GetInstance().ThomasID == 0 {
 		return nil, errors.New("thomas_id is not set")
 	}
 
@@ -75,25 +70,16 @@ func (fc *FatCtrl) getFatCtrlConn() (*grpc.ClientConn, error) {
 	return nil, errors.New("cannot found valid fat_ctrl's address")
 }
 
-func (fc *FatCtrl) UpdateFatCtrlHost(ip string, port int) error {
+func (fc *FatCtrl) UpdateFatCtrlHost(infos *sodor.FatCtrlInfos) error {
 	fc.mux.Lock()
 	defer fc.mux.Unlock()
 
-	for _, h := range fc.fatCtrlHosts {
-		if h.IP == ip && h.port == port {
-			return nil
+	fc.fatCtrlHosts = make([]host, len(infos.FatCtrlInfos))
+	for i, info := range infos.FatCtrlInfos {
+		fc.fatCtrlHosts[i] = host{
+			IP:   info.Host,
+			port: int(info.Port),
 		}
 	}
-
-	fc.fatCtrlHosts = append(fc.fatCtrlHosts, host{
-		IP:   ip,
-		port: port,
-	})
-
-	log.Infof("add new fat_ctrl's address. host=%s port=%d", ip, port)
 	return nil
-}
-
-func (fc *FatCtrl) SetThomasID(id int32) {
-	fc.thomasID = id
 }

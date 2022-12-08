@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/BabySid/gobase"
 	"github.com/urfave/cli/v2"
+	"os"
 	"sodor/base"
 	"strconv"
 	"strings"
@@ -19,6 +20,11 @@ type config struct {
 	AppName       string
 	AppVersion    string
 	RetryInterval time.Duration
+
+	StartTime int32
+	Pid       int32
+
+	ThomasID int32
 }
 
 var (
@@ -46,5 +52,10 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	c.LocalIP = base.LocalHost
 
 	c.RetryInterval = time.Second * 5
+
+	c.StartTime = int32(time.Now().Unix())
+	c.Pid = int32(os.Getpid())
+	c.ThomasID = 0
+
 	return nil
 }

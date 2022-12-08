@@ -8,9 +8,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sodor/fat_controller/metastore"
+	"sodor/fat_controller/util"
 )
 
-func (s *Service) HandShake(ctx context.Context, req *sodor.ThomasInfo) (*sodor.ThomasReply, error) {
+func (s *Service) HandShake(ctx context.Context, req *sodor.ThomasInfo) (*sodor.FatCtrlInfos, error) {
 	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
 	log.Infof("HandShake from %s req.Id=%d", ip, req.Id)
 
@@ -24,5 +25,7 @@ func (s *Service) HandShake(ctx context.Context, req *sodor.ThomasInfo) (*sodor.
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &sodor.ThomasReply{Id: req.Id}, nil
+
+	infos := util.BuildFatCtrlInfos()
+	return infos, nil
 }

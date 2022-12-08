@@ -69,6 +69,8 @@ func (jc *jobContext) Run() {
 		StartTs:    int32(time.Now().Unix()),
 	}
 
+	// todo to support broadcast, we need generate a new task instance according to running_host
+	// and fat_ctrl update the task instance with the reply from thomas's host and instance_id
 	taskInstances := make([]*sodor.TaskInstance, len(jc.job.Tasks))
 	for i, t := range jc.job.Tasks {
 		var taskIns sodor.TaskInstance

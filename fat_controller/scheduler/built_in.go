@@ -31,10 +31,12 @@ func PingThomas(id int32, host string, port int) error {
 		Port: port,
 	}
 
-	err := t.HandShake(id)
+	resp, err := t.HandShake(id)
 
 	if err != nil {
 		return metastore.GetInstance().UpdateThomasStatus(id, err.Error())
 	}
+
+	_ = metastore.GetInstance().UpsertThomas(resp)
 	return nil
 }
