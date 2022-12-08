@@ -7,7 +7,7 @@ import (
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) DropThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) (*sodor.ThomasInfo, *httpapi.JsonRpcError) {
+func (s *Service) DropThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) (*sodor.ThomasReply, *httpapi.JsonRpcError) {
 	if params.Id == 0 {
 		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("invalid params of thomas"))
 	}
@@ -25,5 +25,5 @@ func (s *Service) DropThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) 
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 	ctx.ToLog("DropThomas Done: %+v", params)
-	return &sodor.ThomasInfo{Id: params.Id}, nil
+	return &sodor.ThomasReply{Id: params.Id}, nil
 }
