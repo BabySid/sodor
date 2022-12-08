@@ -14,7 +14,7 @@ import (
 
 func (s *Service) HandShake(ctx context.Context, req *sodor.HandShakeWithThomasRequest) (*sodor.ThomasInfo, error) {
 	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
-	log.Infof("HandShake from %s. id=%d", ip, req.Thomas.Id)
+	log.Infof("HandShake from %s. id=%d sizeOfFatCtrl=%d", ip, req.Thomas.Id, len(req.FatCtrls.FatCtrlInfos))
 
 	config.GetInstance().ThomasID = req.Thomas.Id
 	_ = fat_ctrl.GetInstance().UpdateFatCtrlHost(req.FatCtrls)
