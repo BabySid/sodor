@@ -26,12 +26,8 @@ func NewDingDing() *dingDing {
 	return &dingDing{}
 }
 
-const (
-	DingDing = "DingDing"
-)
-
 func (d *dingDing) GetName() string {
-	return DingDing
+	return sodor.AlertPluginName_APN_DingDing.String()
 }
 
 const (

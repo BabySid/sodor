@@ -12,7 +12,7 @@ type alert interface {
 }
 
 type alertFactory struct {
-	alerts map[string]alert
+	alerts map[sodor.AlertPluginName]alert
 }
 
 func (af *alertFactory) GetAlertPlugins() []alert {
@@ -25,7 +25,7 @@ func (af *alertFactory) GetAlertPlugins() []alert {
 	return rs
 }
 
-func (af *alertFactory) GetAlertPlugin(name string) alert {
+func (af *alertFactory) GetAlertPlugin(name sodor.AlertPluginName) alert {
 	if a, ok := af.alerts[name]; ok {
 		return a
 	}
@@ -41,8 +41,8 @@ var (
 func GetInstance() *alertFactory {
 	once.Do(func() {
 		singleton = &alertFactory{
-			alerts: map[string]alert{
-				DingDing: &dingDing{},
+			alerts: map[sodor.AlertPluginName]alert{
+				sodor.AlertPluginName_APN_DingDing: &dingDing{},
 			},
 		}
 	})
