@@ -48,6 +48,19 @@ func (ms *metaStore) InsertAlertGroup(alert *sodor.AlertGroup) error {
 	return nil
 }
 
+func (ms *metaStore) InsertAlertGroupInstance(alert *sodor.AlertGroupInstance) error {
+	var out AlertGroupInstance
+	toAlertGroupInstance(alert, &out)
+
+	rs := ms.db.Create(&out)
+	if rs.Error != nil {
+		return rs.Error
+	}
+
+	alert.Id = int32(out.ID)
+	return nil
+}
+
 func (ms *metaStore) DeleteAlertGroup(alert *sodor.AlertGroup) error {
 	gobase.True(alert.Id > 0)
 

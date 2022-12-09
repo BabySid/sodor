@@ -52,6 +52,7 @@ type AlertGroupInstance struct {
 	GroupID     int32                  `gorm:"not null"`
 	PluginName  string                 `gorm:"not null;size:64"`
 	ParamsValue map[string]interface{} `gorm:"not null;serializer:json;type:text"`
+	StatusMsg   string                 `gorm:"not null;default:''"`
 }
 
 type Job struct {

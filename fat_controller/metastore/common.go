@@ -290,6 +290,7 @@ func fromAlertGroupInstance(in *AlertGroupInstance, out *sodor.AlertGroupInstanc
 	out.InstanceId = in.InstanceId
 	out.GroupId = in.GroupID
 	out.PluginName = in.PluginName
+	out.StatusMsg = in.StatusMsg
 
 	params, err := structpb.NewStruct(in.ParamsValue)
 	if err != nil {
@@ -298,4 +299,16 @@ func fromAlertGroupInstance(in *AlertGroupInstance, out *sodor.AlertGroupInstanc
 	out.PluginValue = params
 
 	return nil
+}
+
+func toAlertGroupInstance(in *sodor.AlertGroupInstance, out *AlertGroupInstance) {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	}
+
+	out.InstanceId = in.InstanceId
+	out.GroupID = in.GroupId
+	out.PluginName = in.PluginName
+	out.ParamsValue = in.PluginValue.AsMap()
+	out.StatusMsg = in.StatusMsg
 }
