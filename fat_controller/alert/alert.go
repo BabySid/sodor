@@ -7,7 +7,7 @@ import (
 
 type alert interface {
 	GetName() string
-	GetParams() []sodor.AlertPluginParams
+	GetParams() []*sodor.AlertPluginParam
 	GiveAlarm(param map[string]interface{}) error
 }
 

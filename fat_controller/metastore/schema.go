@@ -1,6 +1,7 @@
 package metastore
 
 import (
+	"github.com/BabySid/proto/sodor"
 	"time"
 )
 
@@ -16,7 +17,7 @@ func init() {
 		&Task{},
 		&TaskRelation{},
 		&AlertGroup{},
-		&AlertHistory{},
+		&AlertGroupInstance{},
 		&ScheduleState{},
 		&JobInstance{},
 		&TaskInstance{},
@@ -35,11 +36,19 @@ type AlertGroup struct {
 	TableModel
 	Name string `gorm:"not null;size:64;uniqueIndex:uniq_alert_group"`
 	// pluginName => properties
-	PluginValues map[string]map[string]interface{} `gorm:"not null;serializer:json;type:text"`
+	PluginValues map[sodor.AlertPluginName]map[string]interface{} `gorm:"not null;serializer:json;type:text"`
 }
 
-type AlertHistory struct {
+func (t AlertGroup) UpdateFields() []string {
+	return []string{
+		"Name",
+		"PluginValues",
+	}
+}
+
+type AlertGroupInstance struct {
 	TableModel
+	InstanceId  int32                  `gorm:"not null"`
 	GroupID     int32                  `gorm:"not null"`
 	PluginName  string                 `gorm:"not null;size:64"`
 	ParamsValue map[string]interface{} `gorm:"not null;serializer:json;type:text"`
@@ -59,6 +68,7 @@ func (t Job) UpdateFields() []string {
 		"Name",
 		"SchedulerMode",
 		"RoutineSpec",
+		"AlertGroupID",
 	}
 }
 

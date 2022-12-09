@@ -28,6 +28,17 @@ func (s *Service) CreateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 
+	if params.AlertGroupId > 0 {
+		exist, err = metastore.GetInstance().AlertGroupExist(&sodor.AlertGroup{Id: params.AlertGroupId})
+		if err != nil {
+			return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		}
+
+		if !exist {
+			return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("alert_group not exist"))
+		}
+	}
+
 	if params.ScheduleMode == sodor.ScheduleMode_ScheduleMode_Crontab {
 		err = scheduler.GetInstance().AddJob(params)
 		gobase.True(err == nil)

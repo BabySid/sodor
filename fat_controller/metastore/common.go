@@ -244,3 +244,58 @@ func findTaskID(ts []*Task, name string) uint {
 	gobase.AssertHere()
 	return 0
 }
+
+func toAlertGroup(in *sodor.AlertGroup, out *AlertGroup) error {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	}
+
+	out.Name = in.Name
+	plugins := in.PluginParams.AsMap()
+	for k, v := range plugins {
+		if m, ok := v.(map[string]interface{}); ok {
+			out.PluginValues[sodor.AlertPluginName(sodor.AlertPluginName_value[k])] = m
+		} else {
+			return errors.New("plugin_params should be map[string]map[string]interface{}")
+		}
+	}
+
+	return nil
+}
+
+func fromAlertGroup(in *AlertGroup, out *sodor.AlertGroup) error {
+	out.Id = int32(in.ID)
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
+	out.Name = in.Name
+
+	paramMap := make(map[string]interface{})
+	for k, v := range in.PluginValues {
+		paramMap[k.String()] = v
+	}
+
+	params, err := structpb.NewStruct(paramMap)
+	if err != nil {
+		return err
+	}
+	out.PluginParams = params
+
+	return nil
+}
+
+func fromAlertGroupInstance(in *AlertGroupInstance, out *sodor.AlertGroupInstance) error {
+	out.Id = int32(in.ID)
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
+	out.InstanceId = in.InstanceId
+	out.GroupId = in.GroupID
+	out.PluginName = in.PluginName
+
+	params, err := structpb.NewStruct(in.ParamsValue)
+	if err != nil {
+		return err
+	}
+	out.PluginValue = params
+
+	return nil
+}

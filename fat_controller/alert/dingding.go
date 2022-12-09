@@ -35,8 +35,8 @@ const (
 	DingDingAtMobiles = "atMobiles"
 )
 
-func (d *dingDing) GetParams() []sodor.AlertPluginParams {
-	return []sodor.AlertPluginParams{
+func (d *dingDing) GetParams() []*sodor.AlertPluginParam {
+	return []*sodor.AlertPluginParam{
 		{
 			Name:   DingDingText,
 			Type:   sodor.AlertPluginParamType_APPT_String,

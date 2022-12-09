@@ -7,8 +7,8 @@ import (
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) UpdateAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertGroup) (*sodor.AlertGroupReply, *httpapi.JsonRpcError) {
-	if err := checkAlertGroupValid(params, false); err != nil {
+func (s *Service) CreateAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertGroup) (*sodor.AlertGroupReply, *httpapi.JsonRpcError) {
+	if err := checkAlertGroupValid(params, true); err != nil {
 		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, err)
 	}
 
@@ -17,14 +17,14 @@ func (s *Service) UpdateAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertG
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 
-	if !exist {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("alert_group not exist"))
+	if exist {
+		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("alert_group exist"))
 	}
 
-	if err = metastore.GetInstance().UpdateAlertGroup(params); err != nil {
+	if err = metastore.GetInstance().InsertAlertGroup(params); err != nil {
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}
 
-	ctx.ToLog("UpdateAlertGroup Done: %+v", params)
+	ctx.ToLog("CreateAlertGroup Done: %+v", params)
 	return &sodor.AlertGroupReply{Id: params.Id}, nil
 }

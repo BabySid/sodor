@@ -104,3 +104,33 @@ func checkJobValid(job *sodor.Job, create bool) error {
 
 	return nil
 }
+
+func checkAlertGroupValid(alert *sodor.AlertGroup, create bool) error {
+	if create && alert.Id != 0 {
+		return errors.New("alert_group.id must not be set")
+	}
+	if !create && alert.Id == 0 {
+		return errors.New("alert_group.id must be set")
+	}
+
+	if len(alert.Name) >= metastore.MaxNameLen {
+		return fmt.Errorf("alert.name is long than %d", metastore.MaxNameLen)
+	}
+
+	if len(strings.TrimSpace(alert.Name)) == 0 {
+		return fmt.Errorf("alert.name is empty")
+	}
+
+	m := alert.PluginParams.AsMap()
+	if len(m) == 0 {
+		return errors.New("alert_group.plugin_params must be set")
+	}
+
+	for k, _ := range m {
+		if k != sodor.AlertPluginName_APN_DingDing.String() {
+			return errors.New("key of alert_group.plugin_params is invalid")
+		}
+	}
+
+	return nil
+}

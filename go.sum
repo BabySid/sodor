@@ -140,6 +140,12 @@ github.com/BabySid/proto v0.0.0-20221208104634-17ff2c68b9b6 h1:DYIvEgQmNzWKhVFPw
 github.com/BabySid/proto v0.0.0-20221208104634-17ff2c68b9b6/go.mod h1:cSJ+d6Znm3Ju/WlMxETsHcCLawedmjDo89ZR9J1lLdE=
 github.com/BabySid/proto v0.0.0-20221208120749-05535450ad1b h1:mMjFOgexzhLEhKXj4UyhAm/VwfC7pEXFIWmdMnxomkk=
 github.com/BabySid/proto v0.0.0-20221208120749-05535450ad1b/go.mod h1:cSJ+d6Znm3Ju/WlMxETsHcCLawedmjDo89ZR9J1lLdE=
+github.com/BabySid/proto v0.0.0-20221209072315-543abd99e6c5 h1:nsIjd0P/JWml78zg35y8oruYyv9MOUAIt/qcBKELgQc=
+github.com/BabySid/proto v0.0.0-20221209072315-543abd99e6c5/go.mod h1:cSJ+d6Znm3Ju/WlMxETsHcCLawedmjDo89ZR9J1lLdE=
+github.com/BabySid/proto v0.0.0-20221209082817-81e6bc29ca41 h1:PCtknOC3K2ac1OePVYIbQUTeroreX2RdfuYDZDuecVc=
+github.com/BabySid/proto v0.0.0-20221209082817-81e6bc29ca41/go.mod h1:cSJ+d6Znm3Ju/WlMxETsHcCLawedmjDo89ZR9J1lLdE=
+github.com/BabySid/proto v0.0.0-20221209090116-c70b17f9b15d h1:ajzaEopEadJuadIYlMcvRPnNbDBHKR8gh78oPfjKVas=
+github.com/BabySid/proto v0.0.0-20221209090116-c70b17f9b15d/go.mod h1:cSJ+d6Znm3Ju/WlMxETsHcCLawedmjDo89ZR9J1lLdE=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.1.0 h1:ksErzDEI1khOiGPgpwuI7x2ebx/uXQNw7xJpn9Eq1+I=
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
