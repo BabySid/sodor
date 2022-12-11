@@ -11,7 +11,9 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 ```
 
 # Todo
-* collection task instances of thomas
+* garbage collection task instances of thomas
 * multi-task-type. this should be scalable for parsing the content. e.g. http param, shell script
+  * parsed_content in task instance
 * multi-alert-plugin. this should be scalable
+  * unified alarm logging
 * system-variables. e.g. latest_instance

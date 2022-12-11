@@ -79,7 +79,7 @@ type Task struct {
 	Name         string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
 	RunningHosts string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
 	Type         string `gorm:"not null;default:'';size:16"`
-	Script       string `gorm:"not null;default:'';type:mediumtext"`
+	Content      string `gorm:"not null;default:'';type:mediumtext"`
 }
 
 func (t Task) UpdateFields() []string {
@@ -88,7 +88,7 @@ func (t Task) UpdateFields() []string {
 		"Name",
 		"RunningHosts",
 		"Type",
-		"Script",
+		"Content",
 	}
 }
 
@@ -138,6 +138,7 @@ type TaskInstance struct {
 	PID           int32  `gorm:"not null;default:0"`
 	ExitCode      int32  `gorm:"not null;default:0"`
 	ExitMsg       string `gorm:"not null;default:''"`
+	ParsedContent string `gorm:"not null;default:'';type:mediumtext"`
 	//InputVars     string `gorm:"not null;default:'';type:mediumtext"` // json
 	OutputVars map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
 }

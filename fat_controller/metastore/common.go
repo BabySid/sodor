@@ -61,7 +61,7 @@ func toTask(in *sodor.Task, jobID int32, out *Task) error {
 	out.Name = in.Name
 
 	out.Type = in.Type.String()
-	out.Script = in.Script
+	out.Content = in.Script
 	if in.RunningHosts != nil {
 		jsonBytes, err := codec.DefaultProtoMarshal.Marshal(in.RunningHosts)
 		if err != nil {
@@ -85,7 +85,7 @@ func fromTask(in *Task, out *sodor.Task) error {
 	}
 
 	out.Type = sodor.TaskType(sodor.TaskType_value[in.Type])
-	out.Script = in.Script
+	out.Script = in.Content
 
 	out.CreateAt = int32(in.CreatedAt.Unix())
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
