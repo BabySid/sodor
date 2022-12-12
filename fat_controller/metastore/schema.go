@@ -1,7 +1,6 @@
 package metastore
 
 import (
-	"github.com/BabySid/proto/sodor"
 	"time"
 )
 
@@ -17,7 +16,8 @@ func init() {
 		&Task{},
 		&TaskRelation{},
 		&AlertGroup{},
-		&AlertGroupInstance{},
+		&AlertPluginInstance{},
+		&AlertPluginInstanceHistory{},
 		&ScheduleState{},
 		&JobInstance{},
 		&TaskInstance{},
@@ -36,7 +36,7 @@ type AlertGroup struct {
 	TableModel
 	Name string `gorm:"not null;size:64;uniqueIndex:uniq_alert_group"`
 	// pluginName => properties
-	PluginValues map[sodor.AlertPluginName]map[string]interface{} `gorm:"not null;serializer:json;type:text"`
+	PluginInstance []uint `gorm:"not null;serializer:json;type:text;column:plugin_instance"`
 }
 
 func (t AlertGroup) UpdateFields() []string {
@@ -46,13 +46,28 @@ func (t AlertGroup) UpdateFields() []string {
 	}
 }
 
-type AlertGroupInstance struct {
+type AlertPluginInstance struct {
 	TableModel
-	InstanceId  int32                  `gorm:"not null"`
-	GroupID     int32                  `gorm:"not null"`
-	PluginName  string                 `gorm:"not null;size:64"`
-	ParamsValue map[string]interface{} `gorm:"not null;serializer:json;type:text"`
-	StatusMsg   string                 `gorm:"not null;default:''"`
+	Name       string `gorm:"not null;size:64"`
+	PluginName string `gorm:"not null;size:64"`
+	// serialized data for sodor.AlertPluginInstance.plugin
+	PluginValue string `gorm:"not null;type:text"`
+}
+
+func (t AlertPluginInstance) UpdateFields() []string {
+	return []string{
+		"Name",
+		"PluginName",
+		"Plugin",
+	}
+}
+
+type AlertPluginInstanceHistory struct {
+	TableModel
+	InstanceId int32  `gorm:"not null"`
+	GroupID    int32  `gorm:"not null"`
+	AlertMsg   string `gorm:"not null;size:512"`
+	StatusMsg  string `gorm:"not null;default:'';size:256"`
 }
 
 type Job struct {

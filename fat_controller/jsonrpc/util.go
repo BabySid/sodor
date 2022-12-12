@@ -55,7 +55,7 @@ func checkJobValid(job *sodor.Job, create bool) error {
 			return fmt.Errorf("task.name is empty")
 		}
 
-		if len(strings.TrimSpace(task.Script)) == 0 {
+		if len(strings.TrimSpace(task.Content)) == 0 {
 			return fmt.Errorf("task.script is empty")
 		}
 
@@ -121,15 +121,35 @@ func checkAlertGroupValid(alert *sodor.AlertGroup, create bool) error {
 		return fmt.Errorf("alert.name is empty")
 	}
 
-	m := alert.PluginParams.AsMap()
-	if len(m) == 0 {
-		return errors.New("alert_group.plugin_params must be set")
+	if len(alert.PluginInstance) == 0 {
+		return fmt.Errorf("alert.plugin_instance is empty")
 	}
 
-	for k, _ := range m {
-		if k != sodor.AlertPluginName_APN_DingDing.String() {
-			return errors.New("key of alert_group.plugin_params is invalid")
-		}
+	return nil
+}
+
+func checkAlertPluginValid(plugin *sodor.AlertPluginInstance, create bool) error {
+	if create && plugin.Id != 0 {
+		return errors.New("plugin.id must not be set")
+	}
+	if !create && plugin.Id == 0 {
+		return errors.New("plugin.id must be set")
+	}
+
+	if len(plugin.Name) >= metastore.MaxNameLen {
+		return fmt.Errorf("plugin.name is long than %d", metastore.MaxNameLen)
+	}
+
+	if len(strings.TrimSpace(plugin.Name)) == 0 {
+		return fmt.Errorf("plugin.name is empty")
+	}
+
+	if plugin.PluginName != sodor.AlertPluginName_APN_DingDing.String() {
+		return fmt.Errorf("plugin.plugin_name is invalid")
+	}
+
+	if plugin.Plugin == nil {
+		return fmt.Errorf("plugin.plugin must be set")
 	}
 
 	return nil

@@ -6,6 +6,7 @@ import (
 	"github.com/BabySid/proto/sodor"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
+	"sodor/fat_controller/alert"
 	"sodor/fat_controller/metastore"
 	"sodor/fat_controller/thomas"
 	"sync"
@@ -19,8 +20,11 @@ type jobContext struct {
 	cronID cron.EntryID
 
 	lastInsID int32
-	// jobInsID = >
+	// jobInsID =>
 	instances map[int32]*instance
+
+	// alertPluginInstanceID => alert
+	alerts map[int32]alert.Alert
 }
 
 type instance struct {
@@ -36,6 +40,7 @@ func newJobContext() *jobContext {
 		cronID:    0,
 		lastInsID: 0,
 		instances: make(map[int32]*instance),
+		alerts:    nil,
 	}
 }
 
@@ -50,6 +55,32 @@ func (jc *jobContext) setJob(j *sodor.Job) error {
 	}
 	jc.job = j
 	jc.jobDag = g
+	err = jc.setAlerts()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (jc *jobContext) setAlerts() error {
+	if jc.job.AlertGroupId > 0 {
+		ag := sodor.AlertGroup{
+			Id: jc.job.AlertGroupId,
+		}
+		plugins := sodor.AlertPluginInstances{}
+
+		err := metastore.GetInstance().ShowAlertGroup(&ag, &plugins)
+		if err != nil {
+			return err
+		}
+
+		for id, plugin := range plugins.AlertPluginInstances {
+			param := plugin.Plugin.(*sodor.AlertPluginInstance_Dingding)
+			ding := alert.NewDingDing(param.Dingding.Webhook, param.Dingding.Sign, param.Dingding.AtMobiles)
+			jc.alerts[int32(id)] = ding
+		}
+	}
+
 	return nil
 }
 
@@ -77,10 +108,11 @@ func (jc *jobContext) Run() {
 		taskIns.TaskId = t.Id
 		taskIns.JobId = t.JobId
 		taskIns.StartTs = int32(time.Now().Unix())
+		// todo parse the content according task_type
+		parseTaskContent(t, &taskIns)
 		taskInstances[i] = &taskIns
 	}
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
-		// todo system warning
 		logJob(jc.job).Warnf("run job failed. InsertJobTaskInstance return err=%s", err)
 		return
 	}
@@ -95,8 +127,8 @@ func (jc *jobContext) Run() {
 	}
 
 	go func() {
-		taskIns, task := jc.getTaskInstance(curInstance.Id, int32(jc.jobDag.topoNodes[0].ID()))
-		jc.runTask(curInstance.Id, taskIns, task)
+		task, taskIns := jc.getTaskInstance(curInstance.Id, int32(jc.jobDag.topoNodes[0].ID()))
+		jc.runTask(task, taskIns)
 		logJob(jc.job).Infof("run job at %s, job_instance_id=%d", gobase.FormatTimeStamp(int64(curInstance.ScheduleTs)), curInstance.Id)
 	}()
 
@@ -168,16 +200,16 @@ func (jc *jobContext) buildJobInstance(ins *sodor.TaskInstance, jobIns *sodor.Jo
 	jobIns.ExitMsg = ins.ExitMsg
 }
 
-func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (int32, *sodor.Task) {
+func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (*sodor.Task, *sodor.TaskInstance) {
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
-	var taskIns int32
+	var taskIns *sodor.TaskInstance
 	var task *sodor.Task
 
-	for id, t := range jc.instances[jobIns].taskInstances {
+	for _, t := range jc.instances[jobIns].taskInstances {
 		if t.TaskId == taskId {
-			taskIns = id
+			taskIns = t
 		}
 	}
 	for _, t := range jc.job.Tasks {
@@ -186,16 +218,16 @@ func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (int32, *sodor
 		}
 	}
 
-	gobase.True(taskIns > 0 && task != nil)
-	return taskIns, task
+	gobase.True(taskIns != nil && task != nil)
+	return task, taskIns
 }
 
-func (jc *jobContext) runTask(jobIns int32, taskIns int32, task *sodor.Task) {
+func (jc *jobContext) runTask(task *sodor.Task, ins *sodor.TaskInstance) {
 	var err error
 	var th *metastore.Thomas
 	defer func() {
 		if err != nil {
-			jc.terminalJob(jobIns, taskIns, task, err)
+			jc.terminalJob(task, ins, err)
 		}
 		log.Infof("run task task_id=%d task_name=%s err=%v", task.Id, task.Name, err)
 	}()
@@ -210,15 +242,15 @@ func (jc *jobContext) runTask(jobIns int32, taskIns int32, task *sodor.Task) {
 		return
 	}
 
-	err = jc.sendTaskToThomas(th, jobIns, taskIns, task)
+	err = jc.sendTaskToThomas(th, task, ins)
 }
 
-func (jc *jobContext) terminalJob(jobInsID int32, taskInsID int32, task *sodor.Task, cause error) {
-	taskIns := jc.instances[jobInsID].taskInstances[taskInsID]
-	taskIns.Id = taskInsID
+func (jc *jobContext) terminalJob(task *sodor.Task, ins *sodor.TaskInstance, cause error) {
+	taskIns := jc.instances[ins.JobInstanceId].taskInstances[ins.Id]
+	taskIns.Id = ins.Id
 	taskIns.JobId = task.JobId
 	taskIns.TaskId = task.Id
-	taskIns.JobInstanceId = jobInsID
+	taskIns.JobInstanceId = ins.JobInstanceId
 	taskIns.StopTs = int32(time.Now().Unix())
 	taskIns.Host = task.RunningHosts[0].Node
 	taskIns.ExitCode = -1
@@ -235,12 +267,32 @@ func (jc *jobContext) loadInstanceFromMetaStore(job *sodor.JobInstance, task *so
 	return err
 }
 
-func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, jobIns int32, taskIns int32, task *sodor.Task) error {
+func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, task *sodor.Task, ins *sodor.TaskInstance) error {
 	t := thomas.Thomas{
 		Host: th.Host,
 		Port: th.Port,
 	}
-	return t.RunTask(jobIns, taskIns, task)
+	return t.RunTask(task, ins)
+}
+
+func (jc *jobContext) giveAlert(msg string) {
+	for id, v := range jc.alerts {
+		err := v.GiveAlarm(msg)
+		status := "OK"
+		if err != nil {
+			status = err.Error()
+		}
+		his := sodor.AlertPluginInstanceHistory{
+			InstanceId: id,
+			GroupId:    jc.job.AlertGroupId,
+			AlertMsg:   msg,
+			StatusMsg:  status,
+		}
+		err = metastore.GetInstance().InsertAlertPluginInstanceHistory(&his)
+		if err != nil {
+			logJob(jc.job).Warnf("giveAlert failed. pluginInstanceID=%d err=%s", id, err)
+		}
+	}
 }
 
 func logJob(jc *sodor.Job) *log.Entry {

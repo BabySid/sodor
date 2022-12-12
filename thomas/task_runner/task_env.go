@@ -43,9 +43,9 @@ type CmdContext struct {
 func (e *taskEnv) SetUp(req *sodor.RunTaskRequest) (*CmdContext, error) {
 	path := filepath.Join(
 		config.GetInstance().DataPath,
-		strconv.Itoa(int(req.JobId)),
-		strconv.Itoa(int(req.TaskId)),
-		fmt.Sprintf("%d_%d", req.JobInstanceId, req.TaskInstanceId))
+		strconv.Itoa(int(req.Task.JobId)),
+		strconv.Itoa(int(req.Task.Id)),
+		fmt.Sprintf("%d_%d", req.TaskInstance.JobInstanceId, req.TaskInstance.Id))
 	err := os.MkdirAll(path, defaultPerm)
 	if err != nil {
 		return nil, err

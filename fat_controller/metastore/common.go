@@ -29,6 +29,8 @@ func toJob(in *sodor.Job, out *Job) error {
 		out.RoutineSpec = string(temp)
 	}
 
+	out.AlertGroupID = in.AlertGroupId
+
 	return nil
 }
 
@@ -50,6 +52,8 @@ func fromJob(in *Job, out *sodor.Job) error {
 		out.RoutineSpec = &spec
 	}
 
+	out.AlertGroupId = in.AlertGroupID
+
 	return nil
 }
 
@@ -61,7 +65,7 @@ func toTask(in *sodor.Task, jobID int32, out *Task) error {
 	out.Name = in.Name
 
 	out.Type = in.Type.String()
-	out.Content = in.Script
+	out.Content = in.Content
 	if in.RunningHosts != nil {
 		jsonBytes, err := codec.DefaultProtoMarshal.Marshal(in.RunningHosts)
 		if err != nil {
@@ -85,7 +89,7 @@ func fromTask(in *Task, out *sodor.Task) error {
 	}
 
 	out.Type = sodor.TaskType(sodor.TaskType_value[in.Type])
-	out.Script = in.Content
+	out.Content = in.Content
 
 	out.CreateAt = int32(in.CreatedAt.Unix())
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
@@ -180,6 +184,7 @@ func toTaskInstance(in *sodor.TaskInstance, out *TaskInstance) error {
 	out.JobInstanceID = in.JobInstanceId
 	out.StartTS = in.StartTs
 	out.StopTS = in.StopTs
+	out.ParsedContent = in.ParsedContent
 	out.Host = in.Host
 	out.PID = in.Pid
 	out.ExitCode = in.ExitCode
@@ -216,6 +221,7 @@ func fromTaskInstance(in *TaskInstance, out *sodor.TaskInstance) error {
 	out.Pid = in.PID
 	out.ExitCode = in.ExitCode
 	out.ExitMsg = in.ExitMsg
+	out.ParsedContent = in.ParsedContent
 	outVars, err := structpb.NewStruct(in.OutputVars)
 	if err != nil {
 		return err
@@ -245,19 +251,47 @@ func findTaskID(ts []*Task, name string) uint {
 	return 0
 }
 
+func toAlertPluginInstance(in *sodor.AlertPluginInstance, out *AlertPluginInstance) error {
+	if in.Id > 0 {
+		out.ID = uint(in.Id)
+	}
+
+	out.Name = in.Name
+	out.PluginName = in.PluginName
+	bs, err := codec.DefaultProtoMarshal.Marshal(in.Plugin)
+	if err != nil {
+		return err
+	}
+	out.PluginValue = string(bs)
+	return nil
+}
+
 func toAlertGroup(in *sodor.AlertGroup, out *AlertGroup) error {
 	if in.Id > 0 {
 		out.ID = uint(in.Id)
 	}
 
 	out.Name = in.Name
-	plugins := in.PluginParams.AsMap()
-	for k, v := range plugins {
-		if m, ok := v.(map[string]interface{}); ok {
-			out.PluginValues[sodor.AlertPluginName(sodor.AlertPluginName_value[k])] = m
-		} else {
-			return errors.New("plugin_params should be map[string]map[string]interface{}")
+	out.PluginInstance = make([]uint, len(in.PluginInstance))
+	for i, v := range in.PluginInstance {
+		out.PluginInstance[i] = uint(v)
+	}
+
+	return nil
+}
+
+func fromAlertPluginInstance(in *AlertPluginInstance, out *sodor.AlertPluginInstance) error {
+	out.Id = int32(in.ID)
+	out.Name = in.Name
+	out.PluginName = in.PluginName
+
+	if out.PluginName == sodor.AlertPluginName_APN_DingDing.String() {
+		var v sodor.AlertPluginInstance_Dingding
+		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.PluginValue), &v)
+		if err != nil {
+			return err
 		}
+		out.Plugin = &v
 	}
 
 	return nil
@@ -269,46 +303,34 @@ func fromAlertGroup(in *AlertGroup, out *sodor.AlertGroup) error {
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
 	out.Name = in.Name
 
-	paramMap := make(map[string]interface{})
-	for k, v := range in.PluginValues {
-		paramMap[k.String()] = v
+	out.PluginInstance = make([]int32, len(in.PluginInstance))
+	for i, v := range in.PluginInstance {
+		out.PluginInstance[i] = int32(v)
 	}
-
-	params, err := structpb.NewStruct(paramMap)
-	if err != nil {
-		return err
-	}
-	out.PluginParams = params
 
 	return nil
 }
 
-func fromAlertGroupInstance(in *AlertGroupInstance, out *sodor.AlertGroupInstance) error {
+func fromAlertPluginInstanceHistory(in *AlertPluginInstanceHistory, out *sodor.AlertPluginInstanceHistory) error {
 	out.Id = int32(in.ID)
 	out.CreateAt = int32(in.CreatedAt.Unix())
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
 	out.InstanceId = in.InstanceId
 	out.GroupId = in.GroupID
-	out.PluginName = in.PluginName
+	out.AlertMsg = in.AlertMsg
 	out.StatusMsg = in.StatusMsg
-
-	params, err := structpb.NewStruct(in.ParamsValue)
-	if err != nil {
-		return err
-	}
-	out.PluginValue = params
 
 	return nil
 }
 
-func toAlertGroupInstance(in *sodor.AlertGroupInstance, out *AlertGroupInstance) {
+func toAlertPluginInstanceHistory(in *sodor.AlertPluginInstanceHistory, out *AlertPluginInstanceHistory) {
 	if in.Id > 0 {
 		out.ID = uint(in.Id)
 	}
 
 	out.InstanceId = in.InstanceId
 	out.GroupID = in.GroupId
-	out.PluginName = in.PluginName
-	out.ParamsValue = in.PluginValue.AsMap()
+	out.InstanceId = in.InstanceId
+	out.AlertMsg = in.AlertMsg
 	out.StatusMsg = in.StatusMsg
 }

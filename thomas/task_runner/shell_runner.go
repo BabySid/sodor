@@ -23,21 +23,21 @@ func (s *ShellRunner) Run() error {
 		return err
 	}
 
-	Info.Printf("task(%d-%d-%s) begin to run", s.request.JobId, s.request.TaskId, s.request.Task.Name)
+	Info.Printf("task(%d-%d-%s) begin to run", s.request.Task.JobId, s.request.Task.Id, s.request.Task.Name)
 
 	s.response.ExitCode = SystemError
 
 	defer func() {
-		Info.Printf("task(%d-%d-%s) run finished", s.request.JobId, s.request.TaskId, s.request.Task.Name)
+		Info.Printf("task(%d-%d-%s) run finished", s.request.Task.JobId, s.request.Task.Id, s.request.Task.Name)
 		if err := s.TearDown(); err != nil {
-			Warn.Printf("task(%d-%d-%s) TearDown failed. err=%s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
+			Warn.Printf("task(%d-%d-%s) TearDown failed. err=%s", s.request.Task.JobId, s.request.Task.Id, s.request.Task.Name, err.Error())
 		}
 	}()
 
 	// [\\$#]\\{set_value\\(([^)]*)\\)}
 	req, err := regexp.Compile("set_value\\(([^)]*)\\)")
 	if err != nil {
-		Warn.Printf("task(%d-%d-%s) regexp.Compile failed. err=%s", s.request.JobId, s.request.TaskId, s.request.Task.Name, err.Error())
+		Warn.Printf("task(%d-%d-%s) regexp.Compile failed. err=%s", s.request.Task.JobId, s.request.Task.Id, s.request.Task.Name, err.Error())
 		s.response.ExitMsg = err.Error()
 		return err
 	}
@@ -47,7 +47,7 @@ func (s *ShellRunner) Run() error {
 		Buffered:   false,
 		Streaming:  true,
 		BeforeExec: nil,
-	}, "bash", "-c", s.request.Task.Script)
+	}, "bash", "-c", s.request.TaskInstance.ParsedContent)
 
 	go s.processStdoutStderr(c)
 
@@ -56,7 +56,7 @@ func (s *ShellRunner) Run() error {
 	vars, err := structpb.NewStruct(s.outputVars)
 	if err != nil {
 		Warn.Printf("task(%d-%d-%s) structpb.NewStruct(%+v) failed. err=%s",
-			s.request.JobId, s.request.TaskId, s.request.Task.Name, s.outputVars, err.Error())
+			s.request.Task.JobId, s.request.Task.Id, s.request.Task.Name, s.outputVars, err.Error())
 		return err
 	}
 	s.response.OutputVars = vars

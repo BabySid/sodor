@@ -21,6 +21,17 @@ func (s *Service) UpdateAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertG
 		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("alert_group not exist"))
 	}
 
+	for _, ins := range params.PluginInstance {
+		exist, err = metastore.GetInstance().AlertPluginInstanceExist(&sodor.AlertPluginInstance{Id: ins})
+		if err != nil {
+			return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		}
+
+		if exist {
+			return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("plugin_instance not exist"))
+		}
+	}
+
 	if err = metastore.GetInstance().UpdateAlertGroup(params); err != nil {
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 	}

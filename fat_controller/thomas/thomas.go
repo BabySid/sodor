@@ -41,7 +41,7 @@ func (t *Thomas) HandShake(id int32) (*sodor.ThomasInfo, error) {
 	return resp, err
 }
 
-func (t *Thomas) RunTask(jobIns int32, taskIns int32, task *sodor.Task) error {
+func (t *Thomas) RunTask(task *sodor.Task, ins *sodor.TaskInstance) error {
 	conn, err := t.dial()
 	if err != nil {
 		return err
@@ -50,11 +50,8 @@ func (t *Thomas) RunTask(jobIns int32, taskIns int32, task *sodor.Task) error {
 
 	cli := sodor.NewThomasClient(conn)
 	var req sodor.RunTaskRequest
-	req.TaskInstanceId = taskIns
-	req.JobInstanceId = jobIns
-	req.JobId = task.JobId
-	req.TaskId = task.Id
 	req.Task = task
+	req.TaskInstance = ins
 
 	_, err = cli.RunTask(context.Background(), &req)
 	if s, ok := status.FromError(err); ok {

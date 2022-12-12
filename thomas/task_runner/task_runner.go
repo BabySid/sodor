@@ -54,10 +54,10 @@ func (r *TaskRunner) SetUp() error {
 	}
 
 	var resp sodor.TaskInstance
-	resp.Id = req.TaskInstanceId
-	resp.JobId = req.JobId
-	resp.TaskId = req.TaskId
-	resp.JobInstanceId = req.JobInstanceId
+	resp.Id = req.TaskInstance.Id
+	resp.JobId = req.Task.JobId
+	resp.TaskId = req.Task.Id
+	resp.JobInstanceId = req.TaskInstance.JobInstanceId
 	resp.StartTs = int32(time.Now().Unix())
 	resp.Host = base.LocalHost
 	resp.Pid = int32(os.Getpid())

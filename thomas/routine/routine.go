@@ -30,6 +30,10 @@ func (r *routine) initJobs() error {
 		return err
 	}
 
+	err = r.scheduler.AddJob("removeTaskInstance", "1 1 */1 * * *", removeTaskInstance{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

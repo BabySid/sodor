@@ -21,6 +21,8 @@ type config struct {
 	AppVersion    string
 	RetryInterval time.Duration
 
+	InstanceMaxAge time.Duration
+
 	StartTime int32
 	Pid       int32
 
@@ -52,6 +54,7 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 	c.LocalIP = base.LocalHost
 
 	c.RetryInterval = time.Second * 5
+	c.InstanceMaxAge = time.Second * 7 * 86400
 
 	c.StartTime = int32(time.Now().Unix())
 	c.Pid = int32(os.Getpid())

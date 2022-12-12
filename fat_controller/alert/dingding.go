@@ -11,46 +11,32 @@ import (
 	"github.com/BabySid/proto/sodor"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 )
 
-var _ alert = (*dingDing)(nil)
+var _ Alert = (*DingDing)(nil)
 
-type dingDing struct {
-	webhook string
-	sign    string
+type DingDing struct {
+	webhook   string
+	sign      string
+	atMobiles []string
 }
 
-func NewDingDing() *dingDing {
-	return &dingDing{}
+func NewDingDing(webhook string, sign string, atMobiles []string) *DingDing {
+	d := &DingDing{
+		webhook:   webhook,
+		sign:      sign,
+		atMobiles: atMobiles,
+	}
+
+	return d
 }
 
-func (d *dingDing) GetName() string {
+func (d *DingDing) GetName() string {
 	return sodor.AlertPluginName_APN_DingDing.String()
 }
 
-const (
-	DingDingText      = "text"
-	DingDingAtMobiles = "atMobiles"
-)
-
-func (d *dingDing) GetParams() []*sodor.AlertPluginParam {
-	return []*sodor.AlertPluginParam{
-		{
-			Name:   DingDingText,
-			Type:   sodor.AlertPluginParamType_APPT_String,
-			DescEn: "content that sent to dingDing",
-		},
-		{
-			Name:   DingDingAtMobiles,
-			Type:   sodor.AlertPluginParamType_APPT_String,
-			DescEn: "mobiles that want to be @. format is 1;2",
-		},
-	}
-}
-
-func (d *dingDing) GiveAlarm(param map[string]interface{}) error {
+func (d *DingDing) GiveAlarm(content string) error {
 	// https://open.dingtalk.com/document/robots/custom-robot-access
 	url := d.webhook
 	if d.sign != "" {
@@ -62,11 +48,7 @@ func (d *dingDing) GiveAlarm(param map[string]interface{}) error {
 		url = fmt.Sprintf("%s&timestamp=%d&sign=%s", d.webhook, timestamp, sign)
 	}
 
-	msg := "empty message"
-	if v, ok := param[DingDingText]; ok {
-		msg = fmt.Sprintf("%v", v)
-	}
-	msg += "\n"
+	msg := content + "\n"
 
 	/*
 		{
@@ -88,13 +70,12 @@ func (d *dingDing) GiveAlarm(param map[string]interface{}) error {
 	*/
 	request := make(map[string]interface{})
 
-	if v, ok := param[DingDingAtMobiles]; ok {
+	if len(d.atMobiles) > 0 {
 		atMap := make(map[string][]string)
-		vs := strings.Split(fmt.Sprintf("%v", v), ";")
-		for _, m := range vs {
+		for _, m := range d.atMobiles {
 			msg += "@" + m
 		}
-		atMap["atMobiles"] = vs
+		atMap["atMobiles"] = d.atMobiles
 		request["at"] = atMap
 	}
 

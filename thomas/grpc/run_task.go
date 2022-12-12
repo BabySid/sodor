@@ -15,7 +15,7 @@ import (
 
 func (s *Service) RunTask(ctx context.Context, task *sodor.RunTaskRequest) (*sodor.EmptyResponse, error) {
 	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
-	log.Infof("RunTask from %s. task.id=%d task.insId=%d", ip, task.TaskId, task.TaskInstanceId)
+	log.Infof("RunTask from %s. task.id=%d task.insId=%d", ip, task.Task.Id, task.TaskInstance.Id)
 
 	c, err := task_runner.GetTaskEnv().SetUp(task)
 	if err != nil {
