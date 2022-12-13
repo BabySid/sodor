@@ -189,6 +189,11 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		err = metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
 	} else {
 		err = metastore.GetInstance().UpdateJobTaskInstance(instances.curInstance, ins)
+		if instances.curInstance.ExitCode != 0 {
+			msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
+				jc.job.Name, instances.curInstance.ExitMsg, jc.getTask(ins.TaskId).Name)
+			jc.giveAlert(msg)
+		}
 	}
 
 	return int32(nextTask), err
@@ -198,6 +203,20 @@ func (jc *jobContext) buildJobInstance(ins *sodor.TaskInstance, jobIns *sodor.Jo
 	jobIns.StopTs = ins.StopTs
 	jobIns.ExitCode = ins.ExitCode
 	jobIns.ExitMsg = ins.ExitMsg
+}
+
+func (jc *jobContext) getTask(taskId int32) *sodor.Task {
+	jc.lock.Lock()
+	defer jc.lock.Unlock()
+
+	for _, t := range jc.job.Tasks {
+		if t.Id == taskId {
+			return t
+		}
+	}
+
+	gobase.AssertHere()
+	return nil
 }
 
 func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (*sodor.Task, *sodor.TaskInstance) {
