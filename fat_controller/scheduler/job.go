@@ -111,12 +111,14 @@ func (jc *jobContext) Run() {
 		// todo parse the content according task_type
 		if err := parseTaskContent(t, &taskIns); err != nil {
 			logJob(jc.job).Warnf("parseTaskContent for job failed. err=%s", err)
+			alert.GetInstance().GiveAlert(fmt.Sprintf("parseTaskContent for job failed. err=%s", err))
 			return
 		}
 		taskInstances[i] = &taskIns
 	}
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
 		logJob(jc.job).Warnf("run job failed. InsertJobTaskInstance return err=%s", err)
+		alert.GetInstance().GiveAlert(fmt.Sprintf("run job failed. InsertJobTaskInstance return err=%s", err))
 		return
 	}
 

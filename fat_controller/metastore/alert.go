@@ -5,6 +5,7 @@ import (
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	"gorm.io/gorm"
+	"sodor/fat_controller/config"
 )
 
 func (ms *metaStore) AlertPluginInstanceExist(ap *sodor.AlertPluginInstance) (bool, error) {
@@ -232,6 +233,24 @@ func (ms *metaStore) ListAlertGroups() (*sodor.AlertGroups, error) {
 	return &all, nil
 }
 
+func (ms *metaStore) ShowSodorAlert(name string) (*sodor.AlertGroup, *sodor.AlertPluginInstances, error) {
+	var ag AlertGroup
+	rs := ms.db.Model(&AlertGroup{}).Where(AlertGroup{Name: name}).Limit(1).Find(&ag)
+	if rs.Error != nil {
+		return nil, nil, rs.Error
+	}
+
+	if rs.RowsAffected == 0 {
+		return nil, nil, ErrNotFound
+	}
+
+	var sag sodor.AlertGroup
+	sag.Id = int32(ag.ID)
+	var sapi sodor.AlertPluginInstances
+	err := ms.ShowAlertGroup(&sag, &sapi)
+	return &sag, &sapi, err
+}
+
 func (ms *metaStore) ShowAlertGroup(group *sodor.AlertGroup, instances *sodor.AlertPluginInstances) error {
 	gobase.True(group.Id > 0)
 
@@ -267,16 +286,41 @@ func (ms *metaStore) ShowAlertGroup(group *sodor.AlertGroup, instances *sodor.Al
 func (ms *metaStore) InsertAlertPluginInstanceHistory(his *sodor.AlertPluginInstanceHistory) error {
 	gobase.True(his.Id == 0)
 
-	var out AlertPluginInstanceHistory
-	toAlertPluginInstanceHistory(his, &out)
+	err := ms.db.Transaction(func(tx *gorm.DB) error {
+		var out AlertPluginInstanceHistory
+		toAlertPluginInstanceHistory(his, &out)
 
-	rs := ms.db.Create(&out)
-	if rs.Error != nil {
-		return rs.Error
-	}
+		rs := tx.Create(&out)
+		if rs.Error != nil {
+			return rs.Error
+		}
 
-	his.Id = int32(out.ID)
-	return nil
+		his.Id = int32(out.ID)
+
+		if config.GetInstance().MaxAlertHistory <= 0 {
+			return nil
+		}
+
+		var hisIds []uint
+		rs = tx.Model(&AlertPluginInstanceHistory{}).Where(AlertPluginInstanceHistory{GroupID: his.GroupId, InstanceId: his.InstanceId}).
+			Order("id desc").Offset(int(config.GetInstance().MaxAlertHistory)).Limit(1024).
+			Pluck("id", &hisIds)
+		if rs.Error != nil {
+			return rs.Error
+		}
+
+		if len(hisIds) == 0 {
+			return nil
+		}
+
+		if rs = tx.Where("id in (?)", hisIds).Delete(&AlertPluginInstanceHistory{}); rs.Error != nil {
+			return rs.Error
+		}
+
+		return nil
+	})
+
+	return err
 }
 
 func (ms *metaStore) ShowAlertPluginInstanceHistories(his *sodor.AlertPluginInstanceHistory) (*sodor.AlertPluginInstanceHistories, error) {

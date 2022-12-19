@@ -15,6 +15,7 @@ type config struct {
 	MetaStoreUri      string
 	MaxThomasInstance uint32
 	MaxJobInstance    uint32
+	MaxAlertHistory   uint32
 
 	AppName    string
 	AppVersion string
@@ -45,6 +46,7 @@ func (c *config) InitFromFlags(ctx *cli.Context) error {
 
 	c.MaxThomasInstance = 64
 	c.MaxJobInstance = 64
+	c.MaxAlertHistory = 64
 
 	return nil
 }

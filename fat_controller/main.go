@@ -12,6 +12,7 @@ import (
 	"github.com/urfave/cli/v2/altsrc"
 	"os"
 	"path/filepath"
+	"sodor/fat_controller/alert"
 	"sodor/fat_controller/config"
 	"sodor/fat_controller/grpc"
 	"sodor/fat_controller/jsonrpc"
@@ -117,6 +118,7 @@ func initComponent(ctx *cli.Context) error {
 	config.GetInstance().AppVersion = AppVersion
 
 	_ = metastore.GetInstance()
+	_ = alert.GetInstance()
 
 	err = scheduler.GetInstance().Start()
 	if err != nil {
