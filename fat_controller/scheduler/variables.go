@@ -28,7 +28,7 @@ func parseTaskContent(task *sodor.Task, ins *sodor.TaskInstance) error {
 				return err
 			}
 
-			strings.ReplaceAll(content, variables.SystemLastSuccessVars, string(bs))
+			content = strings.ReplaceAll(content, variables.SystemLastSuccessVars, string(bs))
 		}
 
 		return nil

@@ -127,7 +127,8 @@ func (s *scheduler) UpdateTaskInstance(ins *sodor.TaskInstance) error {
 		return err
 	}
 	if next > 0 {
-		task, taskIns := jc.getTaskInstance(ins.JobInstanceId, next)
+		taskIns := jc.findTaskInstance(ins.JobInstanceId, next)
+		task := jc.findTask(next)
 		jc.runTask(task, taskIns)
 	}
 
