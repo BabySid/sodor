@@ -109,7 +109,10 @@ func (jc *jobContext) Run() {
 		taskIns.JobId = t.JobId
 		taskIns.StartTs = int32(time.Now().Unix())
 		// todo parse the content according task_type
-		parseTaskContent(t, &taskIns)
+		if err := parseTaskContent(t, &taskIns); err != nil {
+			logJob(jc.job).Warnf("parseTaskContent for job failed. err=%s", err)
+			return
+		}
 		taskInstances[i] = &taskIns
 	}
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
@@ -127,7 +130,8 @@ func (jc *jobContext) Run() {
 	}
 
 	go func() {
-		task, taskIns := jc.getTaskInstance(curInstance.Id, int32(jc.jobDag.topoNodes[0].ID()))
+		taskIns := jc.findTaskInstance(curInstance.Id, int32(jc.jobDag.topoNodes[0].ID()))
+		task := jc.findTask(int32(jc.jobDag.topoNodes[0].ID()))
 		jc.runTask(task, taskIns)
 		logJob(jc.job).Infof("run job at %s, job_instance_id=%d", gobase.FormatTimeStamp(int64(curInstance.ScheduleTs)), curInstance.Id)
 	}()
@@ -191,7 +195,7 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		err = metastore.GetInstance().UpdateJobTaskInstance(instances.curInstance, ins)
 		if instances.curInstance.ExitCode != 0 {
 			msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
-				jc.job.Name, instances.curInstance.ExitMsg, jc.getTask(ins.TaskId).Name)
+				jc.job.Name, instances.curInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
 			jc.giveAlert(msg)
 		}
 	}
@@ -205,7 +209,7 @@ func (jc *jobContext) buildJobInstance(ins *sodor.TaskInstance, jobIns *sodor.Jo
 	jobIns.ExitMsg = ins.ExitMsg
 }
 
-func (jc *jobContext) getTask(taskId int32) *sodor.Task {
+func (jc *jobContext) findTask(taskId int32) *sodor.Task {
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
@@ -219,26 +223,20 @@ func (jc *jobContext) getTask(taskId int32) *sodor.Task {
 	return nil
 }
 
-func (jc *jobContext) getTaskInstance(jobIns int32, taskId int32) (*sodor.Task, *sodor.TaskInstance) {
+func (jc *jobContext) findTaskInstance(jobIns int32, taskId int32) *sodor.TaskInstance {
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
 	var taskIns *sodor.TaskInstance
-	var task *sodor.Task
 
 	for _, t := range jc.instances[jobIns].taskInstances {
 		if t.TaskId == taskId {
 			taskIns = t
 		}
 	}
-	for _, t := range jc.job.Tasks {
-		if t.Id == taskId {
-			task = t
-		}
-	}
 
-	gobase.True(taskIns != nil && task != nil)
-	return task, taskIns
+	gobase.True(taskIns != nil)
+	return taskIns
 }
 
 func (jc *jobContext) runTask(task *sodor.Task, ins *sodor.TaskInstance) {
@@ -282,8 +280,7 @@ func (jc *jobContext) terminalJob(task *sodor.Task, ins *sodor.TaskInstance, cau
 }
 
 func (jc *jobContext) loadInstanceFromMetaStore(job *sodor.JobInstance, task *sodor.TaskInstances) error {
-	err := metastore.GetInstance().SelectInstanceByJobInsID(job, task)
-	return err
+	return metastore.GetInstance().SelectInstanceByJobInsID(job, task)
 }
 
 func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, task *sodor.Task, ins *sodor.TaskInstance) error {

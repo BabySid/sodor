@@ -171,3 +171,21 @@ func (ms *metaStore) SelectInstanceByJobID(jobID int32) (*sodor.JobTaskInstances
 
 	return &jtIns, nil
 }
+
+func (ms *metaStore) SelectLastTaskInstance(taskID int32, taskInsID int32) (*sodor.TaskInstance, error) {
+	var taskIns TaskInstance
+	rs := ms.db.Model(&TaskInstance{}).Where("task_id = ? and id < ?", taskID, taskIns).Order("id desc").Limit(1).Find(&taskIns)
+	if rs.Error != nil {
+		return nil, rs.Error
+	}
+
+	if rs.RowsAffected == 0 {
+		return nil, nil
+	}
+
+	var result sodor.TaskInstance
+	if err := fromTaskInstance(&taskIns, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
