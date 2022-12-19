@@ -167,8 +167,8 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 	}
 
 	// update job_instance & task_instance
-	if task, ok := instances.taskInstances[ins.Id]; ok {
-		*task = *ins
+	if _, ok := instances.taskInstances[ins.Id]; ok {
+		instances.taskInstances[ins.Id] = ins
 	}
 
 	nextTask := 0
