@@ -195,9 +195,15 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		jc.instances[ins.JobInstanceId] = instances
 	}
 
+	taskDone := true
 	// update job_instance & task_instance
 	if v, ok := instances.taskInstances[ins.TaskId]; ok {
 		v[ins.Id] = ins
+		for _, is := range v {
+			if is.StopTs == 0 || is.ExitCode != 0 {
+				taskDone = false
+			}
+		}
 	}
 
 	nextTask := 0
@@ -205,14 +211,16 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 	if ins.ExitCode != 0 {
 		jc.buildJobInstance(ins, instances.jobInstance)
 	} else {
-		for i, node := range jc.jobDag.topoNodes {
-			if node.ID() == int64(ins.TaskId) {
-				if i == len(jc.jobDag.topoNodes)-1 {
-					jc.buildJobInstance(ins, instances.jobInstance)
-				} else {
-					nextTask = int(jc.jobDag.topoNodes[i+1].ID())
+		if taskDone {
+			for i, node := range jc.jobDag.topoNodes {
+				if node.ID() == int64(ins.TaskId) {
+					if i == len(jc.jobDag.topoNodes)-1 {
+						jc.buildJobInstance(ins, instances.jobInstance)
+					} else {
+						nextTask = int(jc.jobDag.topoNodes[i+1].ID())
+					}
+					break
 				}
-				break
 			}
 		}
 	}
@@ -220,7 +228,7 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 	var err error
 	if nextTask != 0 {
 		err = metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
-	} else {
+	} else if ins.ExitCode != 0 {
 		err = metastore.GetInstance().UpdateJobTaskInstance(instances.jobInstance, ins)
 		if instances.jobInstance.ExitCode != 0 {
 			msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
