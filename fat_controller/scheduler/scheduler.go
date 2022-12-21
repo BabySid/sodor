@@ -115,6 +115,7 @@ func (s *scheduler) Remove(job *sodor.Job) error {
 
 func (s *scheduler) UpdateTaskInstance(ins *sodor.TaskInstance) error {
 	ctx, ok := s.jobs.Load(ins.JobId)
+	// todo we need load from metastore in case of jobs run by api not the scheduler
 	if !ok {
 		log.Warnf("cannot found jobCtx. maybe delete already. jobid=%d taskid=%d job_instance=%d task_instance=%d",
 			ins.JobId, ins.TaskId, ins.JobInstanceId, ins.Id)

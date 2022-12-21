@@ -59,12 +59,14 @@ func checkJobValid(job *sodor.Job, create bool) error {
 			return fmt.Errorf("task.script is empty")
 		}
 
-		if len(task.RunningHosts) != 1 {
-			return fmt.Errorf("task.running_hosts must have only one host")
+		if len(task.RunningHosts) == 0 {
+			return fmt.Errorf("task.running_hosts must have at least one host")
 		}
 
-		if task.RunningHosts[0].Type != sodor.HostType_HostType_IP || task.RunningHosts[0].Node == "" {
-			return fmt.Errorf("task.running_hosts.item must be IP")
+		for _, host := range task.RunningHosts {
+			if host.Type != sodor.HostType_HostType_IP || host.Node == "" {
+				return fmt.Errorf("task.running_hosts.item must be IP")
+			}
 		}
 
 		if _, ok := s[task.Name]; ok {

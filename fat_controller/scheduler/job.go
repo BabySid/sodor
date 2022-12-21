@@ -19,7 +19,7 @@ type jobContext struct {
 	jobDag *dag
 	cronID cron.EntryID
 
-	lastInsID int32
+	lastJobInsID int32
 	// jobInsID =>
 	instances map[int32]*instance
 
@@ -28,19 +28,19 @@ type jobContext struct {
 }
 
 type instance struct {
-	curInstance *sodor.JobInstance
-	// taskInsID =>
-	taskInstances map[int32]*sodor.TaskInstance
+	jobInstance *sodor.JobInstance
+	// taskID=>taskInsID =>
+	taskInstances map[int32]map[int32]*sodor.TaskInstance
 }
 
 func newJobContext() *jobContext {
 	return &jobContext{
-		job:       nil,
-		jobDag:    nil,
-		cronID:    0,
-		lastInsID: 0,
-		instances: make(map[int32]*instance),
-		alerts:    nil,
+		job:          nil,
+		jobDag:       nil,
+		cronID:       0,
+		lastJobInsID: 0,
+		instances:    make(map[int32]*instance),
+		alerts:       nil,
 	}
 }
 
@@ -88,10 +88,14 @@ func (jc *jobContext) Run() {
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
-	if jc.lastInsID > 0 && jc.instances[jc.lastInsID].curInstance != nil && jc.instances[jc.lastInsID].curInstance.StopTs == 0 {
-		// todo schedule-strategy: skip_run_when_last_is_running
-		logJob(jc.job).Infof("run job delayed because of last instance(%d) is not done.", jc.lastInsID)
-		return
+	if jc.lastJobInsID > 0 {
+		if ins, ok := jc.instances[jc.lastJobInsID]; ok {
+			if ins.jobInstance != nil && ins.jobInstance.StopTs == 0 {
+				// todo schedule-strategy: skip_run_when_last_is_running
+				logJob(jc.job).Infof("run job delayed because of last instance(%d) is not done.", jc.lastJobInsID)
+				return
+			}
+		}
 	}
 
 	curInstance := &sodor.JobInstance{
@@ -100,10 +104,10 @@ func (jc *jobContext) Run() {
 		StartTs:    int32(time.Now().Unix()),
 	}
 
-	// todo to support broadcast, we need generate a new task instance according to running_host
+	// to support broadcast, we need generate a new task instance according to running_host
 	// and fat_ctrl update the task instance with the reply from thomas's host and instance_id
-	taskInstances := make([]*sodor.TaskInstance, len(jc.job.Tasks))
-	for i, t := range jc.job.Tasks {
+	taskInstances := make([]*sodor.TaskInstance, 0)
+	for _, t := range jc.job.Tasks {
 		var taskIns sodor.TaskInstance
 		taskIns.TaskId = t.Id
 		taskIns.JobId = t.JobId
@@ -114,7 +118,16 @@ func (jc *jobContext) Run() {
 			alert.GetInstance().GiveAlert(fmt.Sprintf("parseTaskContent for job failed. err=%s", err))
 			return
 		}
-		taskInstances[i] = &taskIns
+		for _, h := range t.RunningHosts {
+			var ti sodor.TaskInstance
+			ti.Host = h.Node
+			ti.TaskId = taskIns.TaskId
+			ti.JobId = taskIns.JobId
+			ti.StartTs = taskIns.StartTs
+			ti.ParsedContent = taskIns.ParsedContent
+			taskInstances = append(taskInstances, &ti)
+		}
+
 	}
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
 		logJob(jc.job).Warnf("run job failed. InsertJobTaskInstance return err=%s", err)
@@ -122,12 +135,20 @@ func (jc *jobContext) Run() {
 		return
 	}
 
-	taskInsMap := make(map[int32]*sodor.TaskInstance)
+	jc.lastJobInsID = curInstance.Id
+
+	taskInsMap := make(map[int32]map[int32]*sodor.TaskInstance)
 	for _, t := range taskInstances {
-		taskInsMap[t.Id] = t
+		if v, ok := taskInsMap[t.TaskId]; ok {
+			v[t.Id] = t
+		} else {
+			insMap := make(map[int32]*sodor.TaskInstance)
+			insMap[t.Id] = t
+			taskInsMap[t.Id] = insMap
+		}
 	}
 	jc.instances[curInstance.Id] = &instance{
-		curInstance:   curInstance,
+		jobInstance:   curInstance,
 		taskInstances: taskInsMap,
 	}
 
@@ -156,32 +177,38 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 				err, ins.Id, ins.JobId, ins.TaskId)
 			return 0, err
 		}
-		taskInsMap := make(map[int32]*sodor.TaskInstance)
+		taskInsMap := make(map[int32]map[int32]*sodor.TaskInstance)
 		for _, t := range taskInstances.TaskInstances {
-			taskInsMap[t.Id] = t
+			if v, ok := taskInsMap[t.TaskId]; ok {
+				v[t.Id] = t
+			} else {
+				insMap := make(map[int32]*sodor.TaskInstance)
+				insMap[t.Id] = t
+				taskInsMap[t.TaskId] = insMap
+			}
 		}
 
 		instances = &instance{
-			curInstance:   &curInstance,
+			jobInstance:   &curInstance,
 			taskInstances: taskInsMap,
 		}
 		jc.instances[ins.JobInstanceId] = instances
 	}
 
 	// update job_instance & task_instance
-	if _, ok := instances.taskInstances[ins.Id]; ok {
-		instances.taskInstances[ins.Id] = ins
+	if v, ok := instances.taskInstances[ins.TaskId]; ok {
+		v[ins.Id] = ins
 	}
 
 	nextTask := 0
 
 	if ins.ExitCode != 0 {
-		jc.buildJobInstance(ins, instances.curInstance)
+		jc.buildJobInstance(ins, instances.jobInstance)
 	} else {
 		for i, node := range jc.jobDag.topoNodes {
 			if node.ID() == int64(ins.TaskId) {
 				if i == len(jc.jobDag.topoNodes)-1 {
-					jc.buildJobInstance(ins, instances.curInstance)
+					jc.buildJobInstance(ins, instances.jobInstance)
 				} else {
 					nextTask = int(jc.jobDag.topoNodes[i+1].ID())
 				}
@@ -194,10 +221,10 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 	if nextTask != 0 {
 		err = metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
 	} else {
-		err = metastore.GetInstance().UpdateJobTaskInstance(instances.curInstance, ins)
-		if instances.curInstance.ExitCode != 0 {
+		err = metastore.GetInstance().UpdateJobTaskInstance(instances.jobInstance, ins)
+		if instances.jobInstance.ExitCode != 0 {
 			msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
-				jc.job.Name, instances.curInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
+				jc.job.Name, instances.jobInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
 			jc.giveAlert(msg)
 		}
 	}
@@ -225,25 +252,25 @@ func (jc *jobContext) findTask(taskId int32) *sodor.Task {
 	return nil
 }
 
-func (jc *jobContext) findTaskInstance(jobIns int32, taskId int32) *sodor.TaskInstance {
+func (jc *jobContext) findTaskInstance(jobIns int32, taskId int32) *sodor.TaskInstances {
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
-	var taskIns *sodor.TaskInstance
+	var taskIns sodor.TaskInstances
+	taskIns.TaskInstances = make([]*sodor.TaskInstance, 0)
 
-	for _, t := range jc.instances[jobIns].taskInstances {
-		if t.TaskId == taskId {
-			taskIns = t
-		}
+	for _, ins := range jc.instances[jobIns].taskInstances[taskId] {
+		taskIns.TaskInstances = append(taskIns.TaskInstances, ins)
 	}
 
-	gobase.True(taskIns != nil)
-	return taskIns
+	gobase.True(len(taskIns.TaskInstances) > 0)
+	return &taskIns
 }
 
-func (jc *jobContext) runTask(task *sodor.Task, ins *sodor.TaskInstance) {
+func (jc *jobContext) runTask(task *sodor.Task, taskInstances *sodor.TaskInstances) {
 	var err error
 	var th *metastore.Thomas
+	var ins *sodor.TaskInstance
 	defer func() {
 		if err != nil {
 			jc.terminalJob(task, ins, err)
@@ -251,27 +278,34 @@ func (jc *jobContext) runTask(task *sodor.Task, ins *sodor.TaskInstance) {
 		log.Infof("run task task_id=%d task_name=%s err=%v", task.Id, task.Name, err)
 	}()
 
-	th, err = metastore.GetInstance().SelectValidThomas(task.RunningHosts[0].Node)
-	if err != nil {
-		return
-	}
+	for _, instance := range taskInstances.TaskInstances {
+		ins = instance
+		th, err = metastore.GetInstance().SelectValidThomas(ins.Host)
+		if err != nil {
+			return
+		}
 
-	if th.ID == 0 {
-		err = fmt.Errorf("no thomas found for host(%s)", task.RunningHosts[0].Node)
-		return
-	}
+		if th.ID == 0 {
+			err = fmt.Errorf("no thomas found for host(%s)", ins.Host)
+			return
+		}
 
-	err = jc.sendTaskToThomas(th, task, ins)
+		err = jc.sendTaskToThomas(th, task, ins)
+	}
 }
 
 func (jc *jobContext) terminalJob(task *sodor.Task, ins *sodor.TaskInstance, cause error) {
-	taskIns := jc.instances[ins.JobInstanceId].taskInstances[ins.Id]
+	insMap := jc.instances[ins.JobInstanceId].taskInstances[ins.TaskId]
+	gobase.True(insMap != nil)
+	taskIns := insMap[ins.Id]
+	gobase.True(taskIns != nil)
+
 	taskIns.Id = ins.Id
 	taskIns.JobId = task.JobId
 	taskIns.TaskId = task.Id
 	taskIns.JobInstanceId = ins.JobInstanceId
 	taskIns.StopTs = int32(time.Now().Unix())
-	taskIns.Host = task.RunningHosts[0].Node
+	taskIns.Host = ins.Host
 	taskIns.ExitCode = -1
 	taskIns.ExitMsg = cause.Error()
 

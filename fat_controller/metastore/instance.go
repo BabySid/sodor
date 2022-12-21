@@ -174,7 +174,7 @@ func (ms *metaStore) SelectInstanceByJobID(jobID int32) (*sodor.JobTaskInstances
 
 func (ms *metaStore) SelectLastTaskInstance(taskID int32, taskInsID int32) (*sodor.TaskInstance, error) {
 	var taskIns TaskInstance
-	rs := ms.db.Model(&TaskInstance{}).Where("task_id = ? and id < ?", taskID, taskIns).Order("id desc").Limit(1).Find(&taskIns)
+	rs := ms.db.Model(&TaskInstance{}).Where("task_id = ? and id < ?", taskID, taskInsID).Order("id desc").Limit(1).Find(&taskIns)
 	if rs.Error != nil {
 		return nil, rs.Error
 	}
