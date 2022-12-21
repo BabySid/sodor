@@ -20,7 +20,7 @@ var (
 	once      sync.Once
 	singleton *scheduler
 
-	NotRoutineJob = errors.New("not Routine Job")
+	NotRoutineJob = errors.New("not routine job")
 )
 
 func GetInstance() *scheduler {
