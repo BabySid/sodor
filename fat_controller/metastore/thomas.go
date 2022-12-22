@@ -1,17 +1,12 @@
 package metastore
 
 import (
-	"errors"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"sodor/fat_controller/config"
 	"time"
-)
-
-var (
-	NotFoundErr = errors.New("thomas not found")
 )
 
 func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
@@ -28,7 +23,7 @@ func (ms *metaStore) UpsertThomas(req *sodor.ThomasInfo) error {
 
 		if rs.RowsAffected == 0 {
 			log.Warnf("unknown thomas. maybe it has been dropped. %+v", thomas)
-			return NotFoundErr
+			return ErrNotFound
 		}
 
 		var tIns ThomasInstance

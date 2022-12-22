@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not Found")
+	ErrNotFound = errors.New("not found")
 )
 
 func toJob(in *sodor.Job, out *Job) error {

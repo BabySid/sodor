@@ -33,7 +33,7 @@ func GetInstance() *sodorAlert {
 
 func (s *sodorAlert) ResetAlertGroupID() error {
 	ag, plugins, err := metastore.GetInstance().ShowSodorAlert(systemAlertGroupName)
-	if err != nil {
+	if err != nil && err != metastore.ErrNotFound {
 		return err
 	}
 
