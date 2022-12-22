@@ -126,7 +126,6 @@ func (jc *jobContext) Run() {
 			ti.ParsedContent = taskIns.ParsedContent
 			taskInstances = append(taskInstances, &ti)
 		}
-
 	}
 
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
@@ -134,7 +133,6 @@ func (jc *jobContext) Run() {
 		alert.GetInstance().GiveAlert(fmt.Sprintf("run job failed. InsertJobTaskInstance return err=%s", err))
 		return
 	}
-	logJob(jc.job).Infof("build instances into metastore. jobInsId=%d sizeOfTaskIns=%d", curInstance.Id, len(taskInstances))
 
 	jc.lastJobInsID = curInstance.Id
 
@@ -153,10 +151,18 @@ func (jc *jobContext) Run() {
 		taskInstances: taskInsMap,
 	}
 
+	logJob(jc.job).Infof("build task instances. jobInsId=%d sizeOfTaskIns=%d", curInstance.Id, len(taskInstances))
+	for tid, tIns := range jc.instances[curInstance.Id].taskInstances {
+		for _, ins := range tIns {
+			logJob(jc.job).Infof("taskID:%d host:%s taskInsID:%d", tid, ins.Host, ins.Id)
+		}
+	}
+
 	go func() {
-		logJob(jc.job).Infof("begin to run job. jobInsId=%d", curInstance.Id)
-		taskIns := jc.findTaskInstance(curInstance.Id, int32(jc.jobDag.topoNodes[0].ID()))
-		task := jc.findTask(int32(jc.jobDag.topoNodes[0].ID()))
+		firstTask := int32(jc.jobDag.topoNodes[0].ID())
+		logJob(jc.job).Infof("begin to run job. jobInsId=%d firstTaskID=%d", curInstance.Id, firstTask)
+		taskIns := jc.findTaskInstance(curInstance.Id, firstTask)
+		task := jc.findTask(firstTask)
 		jc.runTask(task, taskIns)
 	}()
 
