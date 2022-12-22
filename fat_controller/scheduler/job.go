@@ -80,8 +80,6 @@ func (jc *jobContext) setAlerts() error {
 		}
 
 		logJob(jc.job).Infof("setAlerts. AlertGroupId=%d plugins=%d", jc.job.AlertGroupId, len(jc.alerts))
-
-		jc.giveAlert(fmt.Sprintf("%s start", jc.job.Name))
 	}
 
 	return nil
@@ -353,14 +351,13 @@ func (jc *jobContext) giveAlert(msg string) {
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
-	logJob(jc.job).Infof("giveAlert %s to alerts:%d", msg, len(jc.alerts))
 	for id, v := range jc.alerts {
 		err := v.GiveAlarm(msg)
 		status := "OK"
 		if err != nil {
 			status = err.Error()
 		}
-		logJob(jc.job).Infof("giveAlert %s to alerts:%s status:%s", msg, v.GetName(), status)
+
 		his := sodor.AlertPluginInstanceHistory{
 			InstanceId: id,
 			GroupId:    jc.job.AlertGroupId,
