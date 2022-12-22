@@ -258,7 +258,7 @@ func toAlertPluginInstance(in *sodor.AlertPluginInstance, out *AlertPluginInstan
 
 	out.Name = in.Name
 	out.PluginName = in.PluginName
-	bs, err := codec.DefaultProtoMarshal.Marshal(in.Plugin)
+	bs, err := codec.DefaultProtoMarshal.Marshal(in.Dingding)
 	if err != nil {
 		return err
 	}
@@ -286,12 +286,12 @@ func fromAlertPluginInstance(in *AlertPluginInstance, out *sodor.AlertPluginInst
 	out.PluginName = in.PluginName
 
 	if out.PluginName == sodor.AlertPluginName_APN_DingDing.String() {
-		var v sodor.AlertPluginInstance_Dingding
+		var v sodor.AlertPluginDingDing
 		err := codec.DefaultProtoMarshal.Unmarshal([]byte(in.PluginValue), &v)
 		if err != nil {
 			return err
 		}
-		out.Plugin = &v
+		out.Dingding = &v
 	}
 
 	return nil

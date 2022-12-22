@@ -51,8 +51,7 @@ func (s *sodorAlert) ResetAlertGroupID() error {
 	s.alertGroupID = ag.Id
 
 	for id, plugin := range plugins.AlertPluginInstances {
-		param := plugin.Plugin.(*sodor.AlertPluginInstance_Dingding)
-		ding := NewDingDing(param.Dingding.Webhook, param.Dingding.Sign, param.Dingding.AtMobiles)
+		ding := NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
 		s.alerts[int32(id)] = ding
 	}
 

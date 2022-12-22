@@ -150,8 +150,8 @@ func checkAlertPluginValid(plugin *sodor.AlertPluginInstance, create bool) error
 		return fmt.Errorf("plugin.plugin_name is invalid")
 	}
 
-	if plugin.Plugin == nil {
-		return fmt.Errorf("plugin.plugin must be set")
+	if plugin.Dingding == nil {
+		return fmt.Errorf("plugin.dingding must be set")
 	}
 
 	return nil
