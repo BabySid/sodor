@@ -67,7 +67,8 @@ func (jc *jobContext) setAlerts() error {
 		ag := sodor.AlertGroup{
 			Id: jc.job.AlertGroupId,
 		}
-		plugins := sodor.AlertPluginInstances{}
+
+		var plugins sodor.AlertPluginInstances
 
 		err := metastore.GetInstance().ShowAlertGroup(&ag, &plugins)
 		if err != nil {

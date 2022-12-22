@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"sodor/fat_controller/config"
 )
@@ -273,10 +274,12 @@ func (ms *metaStore) ShowAlertGroup(group *sodor.AlertGroup, instances *sodor.Al
 		for i, v := range ag.PluginInstance {
 			pluginIns[i] = &sodor.AlertPluginInstance{Id: int32(v)}
 		}
+		log.Infof("group=%v pluginIns=%v", ag, ag.PluginInstance)
 		out, err := ms.ListAlertPluginInstances(pluginIns...)
 		if err != nil {
 			return err
 		}
+		log.Infof("ListAlertPluginInstances return %v", *out)
 		instances = out
 	}
 
