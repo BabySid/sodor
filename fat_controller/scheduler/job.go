@@ -73,6 +73,7 @@ func (jc *jobContext) setAlerts() error {
 			return err
 		}
 
+		jc.alerts = make(map[int32]alert.Alert)
 		for id, plugin := range plugins.AlertPluginInstances {
 			ding := alert.NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
 			jc.alerts[int32(id)] = ding

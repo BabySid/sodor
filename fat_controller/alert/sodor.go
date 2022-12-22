@@ -50,6 +50,7 @@ func (s *sodorAlert) ResetAlertGroupID() error {
 
 	s.alertGroupID = ag.Id
 
+	s.alerts = make(map[int32]Alert)
 	for id, plugin := range plugins.AlertPluginInstances {
 		ding := NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
 		s.alerts[int32(id)] = ding
