@@ -25,5 +25,5 @@ func GetGormConfig() *gorm.Config {
 type logWriter struct{}
 
 func (w *logWriter) Printf(format string, data ...interface{}) {
-	log.Infof(format, data...)
+	log.Debugf(format, data...)
 }

@@ -232,8 +232,8 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		}
 	}
 
-	logJob(jc.job).Infof("UpdateTaskInstance(taskInsId:%d) from host:%s with stopts=%d exit_code:%d nextTask:%d taskDone:%v",
-		ins.TaskId, ins.Host, ins.StopTs, ins.ExitCode, nextTask, taskDone)
+	logJob(jc.job).Infof("UpdateTaskInstance(taskId:%d taskInsId:%d) from host:%s with stopts=%d exit_code:%d nextTask:%d taskDone:%v",
+		ins.TaskId, ins.Id, ins.Host, ins.StopTs, ins.ExitCode, nextTask, taskDone)
 
 	var err error
 	if nextTask != 0 {

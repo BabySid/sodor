@@ -66,6 +66,7 @@ func (s *scheduler) Start() error {
 			return err
 		}
 		ctx.cronID = cid
+		log.Infof("AddJob(jobID=%d jobName=%s spec=%s) %d", job.Id, job.Name, job.RoutineSpec.CtSpec, cid)
 
 		s.jobs.Store(job.Id, ctx)
 	}
