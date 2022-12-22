@@ -274,13 +274,14 @@ func (ms *metaStore) ShowAlertGroup(group *sodor.AlertGroup, instances *sodor.Al
 		for i, v := range ag.PluginInstance {
 			pluginIns[i] = &sodor.AlertPluginInstance{Id: int32(v)}
 		}
-		log.Infof("group=%v pluginIns=%v", ag, ag.PluginInstance)
+
 		out, err := ms.ListAlertPluginInstances(pluginIns...)
 		if err != nil {
 			return err
 		}
-		log.Infof("ListAlertPluginInstances return %v", *out)
+
 		instances = out
+		log.Infof("ListAlertPluginInstances return %v", *out)
 	}
 
 	return nil

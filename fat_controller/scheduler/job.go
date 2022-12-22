@@ -75,6 +75,7 @@ func (jc *jobContext) setAlerts() error {
 			return err
 		}
 
+		logJob(jc.job).Infof("AlertPluginInstances=%v", plugins)
 		for id, plugin := range plugins.AlertPluginInstances {
 			ding := alert.NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
 			jc.alerts[int32(id)] = ding
@@ -117,7 +118,7 @@ func (jc *jobContext) Run() {
 		// todo parse the content according task_type
 		if err := parseTaskContent(t, &taskIns); err != nil {
 			logJob(jc.job).Warnf("parseTaskContent for job failed. err=%s", err)
-			alert.GetInstance().GiveAlert(fmt.Sprintf("parseTaskContent for job failed. err=%s", err))
+			go alert.GetInstance().GiveAlert(fmt.Sprintf("parseTaskContent for job failed. err=%s", err))
 			return
 		}
 		for _, h := range t.RunningHosts {
@@ -133,7 +134,7 @@ func (jc *jobContext) Run() {
 
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
 		logJob(jc.job).Warnf("run job failed. InsertJobTaskInstance return err=%s", err)
-		alert.GetInstance().GiveAlert(fmt.Sprintf("run job failed. InsertJobTaskInstance return err=%s", err))
+		go alert.GetInstance().GiveAlert(fmt.Sprintf("run job failed. InsertJobTaskInstance return err=%s", err))
 		return
 	}
 
