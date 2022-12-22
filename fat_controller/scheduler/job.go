@@ -75,8 +75,7 @@ func (jc *jobContext) setAlerts() error {
 		}
 
 		for id, plugin := range plugins.AlertPluginInstances {
-			param := plugin.Plugin.(*sodor.AlertPluginInstance_Dingding)
-			ding := alert.NewDingDing(param.Dingding.Webhook, param.Dingding.Sign, param.Dingding.AtMobiles)
+			ding := alert.NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
 			jc.alerts[int32(id)] = ding
 		}
 	}
