@@ -55,7 +55,7 @@ func (s *sodorAlert) ResetAlertGroupID() error {
 		s.alerts[int32(id)] = ding
 	}
 
-	log.Info("sodor alert is set to group:%d", ag.Id)
+	log.Infof("sodor alert is set to group:%d", ag.Id)
 	return nil
 }
 
