@@ -322,6 +322,7 @@ func (jc *jobContext) terminalJob(task *sodor.Task, ins *sodor.TaskInstance, cau
 	taskIns.JobId = task.JobId
 	taskIns.TaskId = task.Id
 	taskIns.JobInstanceId = ins.JobInstanceId
+	taskIns.StartTs = int32(time.Now().Unix())
 	taskIns.StopTs = int32(time.Now().Unix())
 	taskIns.Host = ins.Host
 	taskIns.ExitCode = -1
@@ -348,6 +349,8 @@ func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, task *sodor.Task, i
 }
 
 func (jc *jobContext) giveAlert(msg string) {
+	logJob(jc.job).Infof("giveAlert %s", msg)
+
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
