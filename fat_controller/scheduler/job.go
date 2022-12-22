@@ -239,9 +239,11 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		// job is terminal or all tasks have been done
 		err := metastore.GetInstance().UpdateJobTaskInstance(instances.jobInstance, ins)
 		if instances.jobInstance.ExitCode != 0 {
-			msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
-				jc.job.Name, instances.jobInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
-			go jc.giveAlert(msg)
+			go func() {
+				msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
+					jc.job.Name, instances.jobInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
+				jc.giveAlert(msg)
+			}()
 		}
 		return 0, err
 	}
@@ -349,8 +351,6 @@ func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, task *sodor.Task, i
 }
 
 func (jc *jobContext) giveAlert(msg string) {
-	logJob(jc.job).Infof("giveAlert %s", msg)
-
 	jc.lock.Lock()
 	defer jc.lock.Unlock()
 
