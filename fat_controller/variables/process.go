@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	variablesRegPattern = "\\$\\{\\w+\\}"
+	variablesRegPattern = "\\$\\{[\\w|\\.]+\\}"
 
 	SystemLastSuccessVars = "${system.last_success_vars}"
 )
