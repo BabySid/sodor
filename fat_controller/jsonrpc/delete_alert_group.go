@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/BabySid/gorpc/http/httpapi"
 	"github.com/BabySid/proto/sodor"
+	"sodor/fat_controller/alert"
 	"sodor/fat_controller/metastore"
 )
 
@@ -23,6 +24,12 @@ func (s *Service) DeleteAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertG
 
 	if err = metastore.GetInstance().DeleteAlertGroup(params); err != nil {
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+	}
+
+	if params.Id == alert.GetInstance().AlertGroupID() {
+		if err = alert.GetInstance().ResetAlertGroupID(); err != nil {
+			return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		}
 	}
 
 	ctx.ToLog("DeleteAlertGroup Done: %+v", params)

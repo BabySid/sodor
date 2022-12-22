@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/BabySid/gorpc/http/httpapi"
 	"github.com/BabySid/proto/sodor"
+	"sodor/fat_controller/alert"
 	"sodor/fat_controller/metastore"
 )
 
@@ -34,6 +35,12 @@ func (s *Service) UpdateAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertG
 
 	if err = metastore.GetInstance().UpdateAlertGroup(params); err != nil {
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+	}
+
+	if params.Name == alert.SystemAlertGroupName {
+		if err = alert.GetInstance().ResetAlertGroupID(); err != nil {
+			return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		}
 	}
 
 	ctx.ToLog("UpdateAlertGroup Done: %+v", params)

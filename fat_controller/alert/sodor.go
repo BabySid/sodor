@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	systemAlertGroupName = "SODOR"
+	SystemAlertGroupName = "SODOR"
 )
 
 type sodorAlert struct {
@@ -31,8 +31,12 @@ func GetInstance() *sodorAlert {
 	return singleton
 }
 
+func (s *sodorAlert) AlertGroupID() int32 {
+	return s.alertGroupID
+}
+
 func (s *sodorAlert) ResetAlertGroupID() error {
-	ag, plugins, err := metastore.GetInstance().ShowSodorAlert(systemAlertGroupName)
+	ag, plugins, err := metastore.GetInstance().ShowSodorAlert(SystemAlertGroupName)
 	if err != nil && err != metastore.ErrNotFound {
 		return err
 	}
@@ -43,6 +47,8 @@ func (s *sodorAlert) ResetAlertGroupID() error {
 		log.Info("sodor alert is not set")
 		return nil
 	}
+
+	s.alertGroupID = ag.Id
 
 	for id, plugin := range plugins.AlertPluginInstances {
 		param := plugin.Plugin.(*sodor.AlertPluginInstance_Dingding)
