@@ -58,6 +58,7 @@ func (r *TaskRunner) SetUp() error {
 	resp.JobId = req.Task.JobId
 	resp.TaskId = req.Task.Id
 	resp.JobInstanceId = req.TaskInstance.JobInstanceId
+	resp.ParsedContent = req.TaskInstance.ParsedContent
 	resp.StartTs = int32(time.Now().Unix())
 	resp.Host = base.LocalHost
 	resp.Pid = int32(os.Getpid())

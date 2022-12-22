@@ -11,7 +11,7 @@ import (
 func (s *Service) UpdateTaskInstance(ctx context.Context, task *sodor.TaskInstance) (*sodor.EmptyResponse, error) {
 	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
 	log.WithFields(log.Fields{"job_instance_id": task.JobInstanceId, "job_id": task.JobId, "task_id": task.TaskId}).
-		Infof("UpdateTaskInstance from %s", ip)
+		Infof("UpdateTaskInstance(taskInsID:%d taskID:%d) with exit_code:%d from %s", task.Id, task.TaskId, task.ExitCode, ip)
 
 	_ = scheduler.GetInstance().UpdateTaskInstance(task)
 	return &sodor.EmptyResponse{}, nil

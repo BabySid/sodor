@@ -128,11 +128,13 @@ func (jc *jobContext) Run() {
 		}
 
 	}
+
 	if err := metastore.GetInstance().InsertJobTaskInstance(curInstance, taskInstances); err != nil {
 		logJob(jc.job).Warnf("run job failed. InsertJobTaskInstance return err=%s", err)
 		alert.GetInstance().GiveAlert(fmt.Sprintf("run job failed. InsertJobTaskInstance return err=%s", err))
 		return
 	}
+	logJob(jc.job).Infof("build instances into metastore. jobInsId=%d sizeOfTaskIns=%d", curInstance.Id, len(taskInstances))
 
 	jc.lastJobInsID = curInstance.Id
 
@@ -152,10 +154,10 @@ func (jc *jobContext) Run() {
 	}
 
 	go func() {
+		logJob(jc.job).Infof("begin to run job. jobInsId=%d", curInstance.Id)
 		taskIns := jc.findTaskInstance(curInstance.Id, int32(jc.jobDag.topoNodes[0].ID()))
 		task := jc.findTask(int32(jc.jobDag.topoNodes[0].ID()))
 		jc.runTask(task, taskIns)
-		logJob(jc.job).Infof("run job at %s, job_instance_id=%d", gobase.FormatTimeStamp(int64(curInstance.ScheduleTs)), curInstance.Id)
 	}()
 
 	return
@@ -224,6 +226,9 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		}
 	}
 
+	logJob(jc.job).Infof("UpdateTaskInstance(taskInsId:%d) from host:%s with stopts=%d exit_code:%d nextTask:%d taskDone:%v",
+		ins.TaskId, ins.Host, ins.StopTs, ins.ExitCode, nextTask, taskDone)
+
 	var err error
 	if nextTask != 0 {
 		err = metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
@@ -282,7 +287,6 @@ func (jc *jobContext) runTask(task *sodor.Task, taskInstances *sodor.TaskInstanc
 		if err != nil {
 			jc.terminalJob(task, ins, err)
 		}
-		log.Infof("run task task_id=%d task_name=%s err=%v", task.Id, task.Name, err)
 	}()
 
 	for _, instance := range taskInstances.TaskInstances {
@@ -298,6 +302,7 @@ func (jc *jobContext) runTask(task *sodor.Task, taskInstances *sodor.TaskInstanc
 		}
 
 		err = jc.sendTaskToThomas(th, task, ins)
+		logJob(jc.job).Infof("run task(%d:%s) at host:%s. taskInsID:%d err=%v", task.Id, task.Name, ins.Host, ins.Id, err)
 	}
 }
 
@@ -315,6 +320,8 @@ func (jc *jobContext) terminalJob(task *sodor.Task, ins *sodor.TaskInstance, cau
 	taskIns.Host = ins.Host
 	taskIns.ExitCode = -1
 	taskIns.ExitMsg = cause.Error()
+
+	logJob(jc.job).Infof("terminal task(%d:%s) with error:%s. taskInsID:%d", task.Id, task.Name, taskIns.ExitMsg, ins.Id)
 
 	_, err := jc.UpdateTaskInstance(taskIns)
 	if err != nil {
