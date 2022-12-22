@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/proto/sodor"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"sodor/fat_controller/config"
 )
@@ -247,44 +246,37 @@ func (ms *metaStore) ShowSodorAlert(name string) (*sodor.AlertGroup, *sodor.Aler
 
 	var sag sodor.AlertGroup
 	sag.Id = int32(ag.ID)
-	var sapi sodor.AlertPluginInstances
-	err := ms.ShowAlertGroup(&sag, &sapi)
-	return &sag, &sapi, err
+	return ms.ShowAlertGroup(&sag)
 }
 
-func (ms *metaStore) ShowAlertGroup(group *sodor.AlertGroup, instances *sodor.AlertPluginInstances) error {
+func (ms *metaStore) ShowAlertGroup(group *sodor.AlertGroup) (*sodor.AlertGroup, *sodor.AlertPluginInstances, error) {
 	gobase.True(group.Id > 0)
 
 	var ag AlertGroup
 	rs := ms.db.Limit(1).Find(&ag, group.Id)
 	if rs.Error != nil {
-		return rs.Error
+		return nil, nil, rs.Error
 	}
 
 	if rs.RowsAffected == 0 {
-		return ErrNotFound
+		return nil, nil, ErrNotFound
 	}
 
 	if err := fromAlertGroup(&ag, group); err != nil {
-		return err
+		return nil, nil, err
 	}
 
-	if instances != nil {
-		pluginIns := make([]*sodor.AlertPluginInstance, len(ag.PluginInstance))
-		for i, v := range ag.PluginInstance {
-			pluginIns[i] = &sodor.AlertPluginInstance{Id: int32(v)}
-		}
-
-		out, err := ms.ListAlertPluginInstances(pluginIns...)
-		if err != nil {
-			return err
-		}
-
-		instances = out
-		log.Infof("ListAlertPluginInstances return %v", *out)
+	pluginIns := make([]*sodor.AlertPluginInstance, len(ag.PluginInstance))
+	for i, v := range ag.PluginInstance {
+		pluginIns[i] = &sodor.AlertPluginInstance{Id: int32(v)}
 	}
 
-	return nil
+	out, err := ms.ListAlertPluginInstances(pluginIns...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return group, out, nil
 }
 
 func (ms *metaStore) InsertAlertPluginInstanceHistory(his *sodor.AlertPluginInstanceHistory) error {

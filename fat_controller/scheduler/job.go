@@ -64,24 +64,21 @@ func (jc *jobContext) setJob(j *sodor.Job) error {
 
 func (jc *jobContext) setAlerts() error {
 	if jc.job.AlertGroupId > 0 {
-		ag := sodor.AlertGroup{
+		ag := &sodor.AlertGroup{
 			Id: jc.job.AlertGroupId,
 		}
 
-		var plugins sodor.AlertPluginInstances
-
-		err := metastore.GetInstance().ShowAlertGroup(&ag, &plugins)
+		ag, plugins, err := metastore.GetInstance().ShowAlertGroup(ag)
 		if err != nil {
 			return err
 		}
 
-		logJob(jc.job).Infof("AlertPluginInstances=%v", plugins)
 		for id, plugin := range plugins.AlertPluginInstances {
 			ding := alert.NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
 			jc.alerts[int32(id)] = ding
 		}
 
-		logJob(jc.job).Infof("setAlerts. AlertGroupId=%d plugins=%d", jc.job.AlertGroupId, len(plugins.AlertPluginInstances))
+		logJob(jc.job).Infof("setAlerts. AlertGroupId=%d plugins=%d", jc.job.AlertGroupId, len(jc.alerts))
 	}
 
 	return nil
