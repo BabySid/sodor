@@ -143,7 +143,7 @@ func (jc *jobContext) Run() {
 		} else {
 			insMap := make(map[int32]*sodor.TaskInstance)
 			insMap[t.Id] = t
-			taskInsMap[t.Id] = insMap
+			taskInsMap[t.TaskId] = insMap
 		}
 	}
 	jc.instances[curInstance.Id] = &instance{
