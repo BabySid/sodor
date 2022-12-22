@@ -240,11 +240,11 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		err = metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
 	} else if ins.ExitCode != 0 {
 		err = metastore.GetInstance().UpdateJobTaskInstance(instances.jobInstance, ins)
-		if instances.jobInstance.ExitCode != 0 {
-			msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
-				jc.job.Name, instances.jobInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
-			jc.giveAlert(msg)
-		}
+		//if instances.jobInstance.ExitCode != 0 {
+		//	msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
+		//		jc.job.Name, instances.jobInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
+		//	jc.giveAlert(msg)
+		//}
 	}
 
 	return int32(nextTask), err
@@ -331,7 +331,7 @@ func (jc *jobContext) terminalJob(task *sodor.Task, ins *sodor.TaskInstance, cau
 
 	_, err := jc.UpdateTaskInstance(taskIns)
 	if err != nil {
-		log.Warnf("UpdateTaskInstance failed. err=%s", err)
+		logJob(jc.job).Warnf("UpdateTaskInstance failed. err=%s", err)
 	}
 }
 
@@ -348,6 +348,7 @@ func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, task *sodor.Task, i
 }
 
 func (jc *jobContext) giveAlert(msg string) {
+	logJob(jc.job).Infof("giveAlert %s to alerts:%d", msg, len(jc.alerts))
 	for id, v := range jc.alerts {
 		err := v.GiveAlarm(msg)
 		status := "OK"
