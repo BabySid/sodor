@@ -28,7 +28,7 @@ func (s *Service) CreateAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertG
 			return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
 		}
 
-		if exist {
+		if !exist {
 			return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("plugin_instance not exist"))
 		}
 	}

@@ -21,7 +21,7 @@ func (ms *metaStore) AlertPluginInstanceExist(ap *sodor.AlertPluginInstance) (bo
 	}
 
 	var alert apiAlertPlugin
-	rs := ms.db.Model(&AlertGroup{}).Where(&a).Limit(1).Find(&alert)
+	rs := ms.db.Model(&AlertPluginInstance{}).Where(&a).Limit(1).Find(&alert)
 	if rs.Error != nil {
 		return false, rs.Error
 	}
