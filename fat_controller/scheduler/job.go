@@ -78,6 +78,8 @@ func (jc *jobContext) setAlerts() error {
 			ding := alert.NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
 			jc.alerts[int32(id)] = ding
 		}
+
+		logJob(jc.job).Infof("setAlerts. AlertGroupId=%d plugins=%d", jc.job.AlertGroupId, len(plugins.AlertPluginInstances))
 	}
 
 	return nil
@@ -232,21 +234,21 @@ func (jc *jobContext) UpdateTaskInstance(ins *sodor.TaskInstance) (int32, error)
 		}
 	}
 
-	logJob(jc.job).Infof("UpdateTaskInstance(taskId:%d taskInsId:%d) from host:%s with stopts=%d exit_code:%d nextTask:%d taskDone:%v",
+	logJob(jc.job).Infof("UpdateTaskInstance(taskId:%d taskInsId:%d) from host:%s with stopts:%d exit_code:%d nextTask:%d taskDone:%v",
 		ins.TaskId, ins.Id, ins.Host, ins.StopTs, ins.ExitCode, nextTask, taskDone)
 
-	var err error
-	if nextTask != 0 {
-		err = metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
-	} else if ins.ExitCode != 0 {
-		err = metastore.GetInstance().UpdateJobTaskInstance(instances.jobInstance, ins)
-		//if instances.jobInstance.ExitCode != 0 {
-		//	msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
-		//		jc.job.Name, instances.jobInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
-		//	jc.giveAlert(msg)
-		//}
+	if instances.jobInstance.StopTs > 0 {
+		// job is terminal or all tasks have been done
+		err := metastore.GetInstance().UpdateJobTaskInstance(instances.jobInstance, ins)
+		if instances.jobInstance.ExitCode != 0 {
+			msg := fmt.Sprintf("job:%s finished with a error:%s from task:%s",
+				jc.job.Name, instances.jobInstance.ExitMsg, jc.findTask(ins.TaskId).Name)
+			go jc.giveAlert(msg)
+		}
+		return 0, err
 	}
 
+	err := metastore.GetInstance().UpdateJobTaskInstance(nil, ins)
 	return int32(nextTask), err
 }
 
@@ -295,8 +297,8 @@ func (jc *jobContext) runTask(task *sodor.Task, taskInstances *sodor.TaskInstanc
 		}
 	}()
 
-	for _, instance := range taskInstances.TaskInstances {
-		ins = instance
+	for _, taskIns := range taskInstances.TaskInstances {
+		ins = taskIns
 		th, err = metastore.GetInstance().SelectValidThomas(ins.Host)
 		if err != nil {
 			return
@@ -348,6 +350,9 @@ func (jc *jobContext) sendTaskToThomas(th *metastore.Thomas, task *sodor.Task, i
 }
 
 func (jc *jobContext) giveAlert(msg string) {
+	jc.lock.Lock()
+	defer jc.lock.Unlock()
+
 	logJob(jc.job).Infof("giveAlert %s to alerts:%d", msg, len(jc.alerts))
 	for id, v := range jc.alerts {
 		err := v.GiveAlarm(msg)
@@ -355,6 +360,7 @@ func (jc *jobContext) giveAlert(msg string) {
 		if err != nil {
 			status = err.Error()
 		}
+		logJob(jc.job).Infof("giveAlert %s to alerts:%s status:%s", msg, v.GetName(), status)
 		his := sodor.AlertPluginInstanceHistory{
 			InstanceId: id,
 			GroupId:    jc.job.AlertGroupId,

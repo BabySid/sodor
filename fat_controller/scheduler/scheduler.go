@@ -66,7 +66,6 @@ func (s *scheduler) Start() error {
 			return err
 		}
 		ctx.cronID = cid
-		log.Infof("AddJob(jobID=%d jobName=%s spec=%s) %d", job.Id, job.Name, job.RoutineSpec.CtSpec, cid)
 
 		s.jobs.Store(job.Id, ctx)
 	}
@@ -101,6 +100,8 @@ func (s *scheduler) AddJob(job *sodor.Job) error {
 	ctx.cronID = cid
 
 	s.jobs.Store(job.Id, ctx)
+
+	log.Infof("AddJob(jobID=%d jobName=%s spec=%s) %d", job.Id, job.Name, job.RoutineSpec.CtSpec, cid)
 	return nil
 }
 
@@ -109,6 +110,8 @@ func (s *scheduler) Remove(job *sodor.Job) error {
 	if ok {
 		jc := ctx.(*jobContext)
 		s.routine.Remove(jc.cronID)
+
+		log.Infof("Remove(jobID=%d)", job.Id)
 	}
 
 	return nil
