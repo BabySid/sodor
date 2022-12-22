@@ -12,6 +12,8 @@ const (
 )
 
 type sodorAlert struct {
+	lock sync.Mutex
+
 	alertGroupID int32
 	alerts       map[int32]Alert
 }
@@ -36,6 +38,9 @@ func (s *sodorAlert) AlertGroupID() int32 {
 }
 
 func (s *sodorAlert) ResetAlertGroupID() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	ag, plugins, err := metastore.GetInstance().ShowSodorAlert(SystemAlertGroupName)
 	if err != nil && err != metastore.ErrNotFound {
 		return err
@@ -51,16 +56,20 @@ func (s *sodorAlert) ResetAlertGroupID() error {
 	s.alertGroupID = ag.Id
 
 	s.alerts = make(map[int32]Alert)
-	for id, plugin := range plugins.AlertPluginInstances {
+	for _, plugin := range plugins.AlertPluginInstances {
 		ding := NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
-		s.alerts[int32(id)] = ding
+		s.alerts[plugin.Id] = ding
 	}
 
 	log.Infof("sodor alert is set to group:%d plugins:%d", ag.Id, len(s.alerts))
+
 	return nil
 }
 
 func (s *sodorAlert) GiveAlert(msg string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	if len(s.alerts) == 0 {
 		return
 	}

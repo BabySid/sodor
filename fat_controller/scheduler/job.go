@@ -74,12 +74,14 @@ func (jc *jobContext) setAlerts() error {
 		}
 
 		jc.alerts = make(map[int32]alert.Alert)
-		for id, plugin := range plugins.AlertPluginInstances {
+		for _, plugin := range plugins.AlertPluginInstances {
 			ding := alert.NewDingDing(plugin.Dingding.Webhook, plugin.Dingding.Sign, plugin.Dingding.AtMobiles)
-			jc.alerts[int32(id)] = ding
+			jc.alerts[plugin.Id] = ding
 		}
 
 		logJob(jc.job).Infof("setAlerts. AlertGroupId=%d plugins=%d", jc.job.AlertGroupId, len(jc.alerts))
+
+		jc.giveAlert(fmt.Sprintf("%s start", jc.job.Name))
 	}
 
 	return nil
@@ -112,7 +114,6 @@ func (jc *jobContext) Run() {
 		var taskIns sodor.TaskInstance
 		taskIns.TaskId = t.Id
 		taskIns.JobId = t.JobId
-		taskIns.StartTs = int32(time.Now().Unix())
 		// todo parse the content according task_type
 		if err := parseTaskContent(t, &taskIns); err != nil {
 			logJob(jc.job).Warnf("parseTaskContent for job failed. err=%s", err)
@@ -124,7 +125,6 @@ func (jc *jobContext) Run() {
 			ti.Host = h.Node
 			ti.TaskId = taskIns.TaskId
 			ti.JobId = taskIns.JobId
-			ti.StartTs = taskIns.StartTs
 			ti.ParsedContent = taskIns.ParsedContent
 			taskInstances = append(taskInstances, &ti)
 		}
