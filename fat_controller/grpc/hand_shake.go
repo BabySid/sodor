@@ -20,7 +20,7 @@ func (s *Service) HandShake(ctx context.Context, req *sodor.ThomasInfo) (*sodor.
 	}
 
 	if err := metastore.GetInstance().UpsertThomas(req); err != nil {
-		if err == metastore.NotFoundErr {
+		if err == metastore.ErrNotFound {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
