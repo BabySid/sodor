@@ -17,7 +17,7 @@ func parseTaskContent(task *sodor.Task, ins *sodor.TaskInstance) error {
 
 		if term == variables.SystemLastSuccessVars {
 			h := handle.(*variables.LastSuccessVars)
-			h.SetTaskID(task.Id, ins.Id)
+			h.SetTaskID(task.Id)
 			data, err := h.Handle()
 			if err != nil {
 				return err

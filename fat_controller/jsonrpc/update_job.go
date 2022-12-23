@@ -33,7 +33,7 @@ func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 			return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("alert_group not exist"))
 		}
 	}
-	
+
 	err = metastore.GetInstance().UpdateJob(params)
 	if err != nil {
 		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
@@ -47,6 +47,6 @@ func (s *Service) UpdateJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 		gobase.True(err == nil)
 	}
 
-	ctx.ToLog("UpdateJob Done: %+v", params)
+	ctx.ToLog("UpdateJob Done: %d", params.Id)
 	return &sodor.JobReply{Id: params.Id}, nil
 }

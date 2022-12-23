@@ -7,17 +7,15 @@ type VariableHandle interface {
 }
 
 type LastSuccessVars struct {
-	taskId    int32
-	taskInsId int32
+	taskId int32
 }
 
-func (v *LastSuccessVars) SetTaskID(id int32, insId int32) {
+func (v *LastSuccessVars) SetTaskID(id int32) {
 	v.taskId = id
-	v.taskInsId = insId
 }
 
 func (v *LastSuccessVars) Handle() (interface{}, error) {
-	ins, err := metastore.GetInstance().SelectLastTaskInstance(v.taskId, v.taskInsId)
+	ins, err := metastore.GetInstance().SelectLastTaskInstance(v.taskId)
 	if err != nil {
 		return nil, err
 	}
