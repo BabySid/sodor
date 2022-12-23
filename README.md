@@ -11,3 +11,6 @@ Sodor is a distributed and extensible scheduler system, with lower operating exp
 ```
 
 # Todo
+* format log
+* in time job-scheduler
+* run instance

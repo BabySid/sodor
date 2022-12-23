@@ -105,6 +105,23 @@ func (s *scheduler) AddJob(job *sodor.Job) error {
 	return nil
 }
 
+func (s *scheduler) RunJob(job *sodor.Job) error {
+	var jc *jobContext
+	ctx, ok := s.jobs.Load(job.Id)
+	if !ok {
+		jc = newJobContext()
+		err := jc.setJob(job)
+		gobase.True(err == nil)
+
+		s.jobs.Store(job.Id, jc)
+	} else {
+		jc = ctx.(*jobContext)
+	}
+
+	jc.Run()
+	return nil
+}
+
 func (s *scheduler) Remove(job *sodor.Job) error {
 	ctx, ok := s.jobs.LoadAndDelete(job.Id)
 	if ok {
@@ -118,15 +135,28 @@ func (s *scheduler) Remove(job *sodor.Job) error {
 }
 
 func (s *scheduler) UpdateTaskInstance(ins *sodor.TaskInstance) error {
+	var jc *jobContext
+
 	ctx, ok := s.jobs.Load(ins.JobId)
-	// todo we need load from metastore in case of jobs run by api not the scheduler
 	if !ok {
-		log.Warnf("cannot found jobCtx. maybe delete already. jobid=%d taskid=%d job_instance=%d task_instance=%d",
-			ins.JobId, ins.TaskId, ins.JobInstanceId, ins.Id)
-		return NotRoutineJob
+		var job sodor.Job
+		job.Id = ins.JobId
+		err := metastore.GetInstance().SelectJob(&job)
+		if err != nil {
+			log.Warnf("cannot found jobCtx. maybe delete already. jobid=%d taskid=%d job_instance=%d task_instance=%d err=%v",
+				ins.JobId, ins.TaskId, ins.JobInstanceId, ins.Id, err)
+			return err
+		}
+
+		jc = newJobContext()
+		err = jc.setJob(&job)
+		gobase.True(err == nil)
+
+		s.jobs.Store(job.Id, jc)
+	} else {
+		jc = ctx.(*jobContext)
 	}
 
-	jc := ctx.(*jobContext)
 	next, err := jc.UpdateTaskInstance(ins)
 	if err != nil {
 		return err
