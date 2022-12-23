@@ -63,6 +63,10 @@ func checkJobValid(job *sodor.Job, create bool) error {
 			return fmt.Errorf("task.running_hosts must have at least one host")
 		}
 
+		if task.JobId != job.Id {
+			return fmt.Errorf("task.job_id must be equal with job.id")
+		}
+
 		for _, host := range task.RunningHosts {
 			if host.Type != sodor.HostType_HostType_IP || host.Node == "" {
 				return fmt.Errorf("task.running_hosts.item must be IP")
