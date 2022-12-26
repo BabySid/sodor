@@ -9,6 +9,7 @@ import (
 	"sodor/fat_controller/alert"
 	"sodor/fat_controller/metastore"
 	"sodor/fat_controller/thomas"
+	"sodor/fat_controller/variables"
 	"sync"
 	"time"
 )
@@ -256,6 +257,15 @@ func (jc *jobContext) buildJobInstance(ins *sodor.TaskInstance, jobIns *sodor.Jo
 	jobIns.StopTs = ins.StopTs
 	jobIns.ExitCode = ins.ExitCode
 	jobIns.ExitMsg = ins.ExitMsg
+}
+
+func (jc *jobContext) reSetTaskInstance(ins *sodor.TaskInstance) {
+	if ins.ExitCode != 0 {
+		m := ins.OutputVars.AsMap()
+		if msg, ok := m[variables.SystemExitMsg]; ok {
+			ins.ExitMsg = fmt.Sprintf("%v", msg)
+		}
+	}
 }
 
 func (jc *jobContext) findTask(taskId int32) *sodor.Task {

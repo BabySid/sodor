@@ -9,6 +9,8 @@ const (
 	variablesRegPattern = "\\$\\{[\\w|\\.]+\\}"
 
 	SystemLastSuccessVars = "${system.last_success_vars}"
+
+	SystemExitMsg = "__exit_msg__"
 )
 
 var (
