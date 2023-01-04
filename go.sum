@@ -116,6 +116,8 @@ git.sr.ht/~sbinet/gg v0.3.1/go.mod h1:KGYtlADtqsqANL9ueOFkWymvzUvLMQllU5Ixo+8v3p
 github.com/BabySid/gobase v0.0.0-20220909073940-956b7a4bad57/go.mod h1:psRlcjEywZdxNf9jp6IdYY7VcAsYPtcnLHYQ+dWG5uw=
 github.com/BabySid/gobase v0.0.0-20221114091117-3a06ae016938 h1:bUZER5+gFWYJcmNDyhBfQ6XJeJh/nmOkqKSrVSZQ4/c=
 github.com/BabySid/gobase v0.0.0-20221114091117-3a06ae016938/go.mod h1:psRlcjEywZdxNf9jp6IdYY7VcAsYPtcnLHYQ+dWG5uw=
+github.com/BabySid/gobase v0.0.0-20230104101517-f5f41baef74e h1:JTIAgB8SpaeYaIsgfzjB2AJPyQMUF4cXrG7+/QGbIQ8=
+github.com/BabySid/gobase v0.0.0-20230104101517-f5f41baef74e/go.mod h1:psRlcjEywZdxNf9jp6IdYY7VcAsYPtcnLHYQ+dWG5uw=
 github.com/BabySid/gorpc v0.0.0-20221114095529-e086f2e102ff h1:i/Es1YlbkE/zGEixhX4voYsLJ7k9c90WjaRQ8GmBiE0=
 github.com/BabySid/gorpc v0.0.0-20221114095529-e086f2e102ff/go.mod h1:3B1N3EfMKBSVIY4mc+eUyjqdh62ODu7cVtp33ZGzxyc=
 github.com/BabySid/gorpc v0.0.0-20221222063512-d7863d018fdc h1:z7pNKPKfRA4Q+KFL6iq9yq6K/Vhj97qIM/a8u5DqK74=

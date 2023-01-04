@@ -1,7 +1,7 @@
 package metastore
 
 import (
-	"time"
+	"github.com/BabySid/gobase"
 )
 
 // This is the data structure of the storage layer
@@ -26,14 +26,8 @@ func init() {
 	}
 }
 
-type TableModel struct {
-	ID        uint `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
 type AlertGroup struct {
-	TableModel
+	gobase.TableModel
 	Name string `gorm:"not null;size:64;uniqueIndex:uniq_alert_group"`
 	// pluginName => properties
 	PluginInstance []uint `gorm:"not null;serializer:json;type:text;column:plugin_instance"`
@@ -47,7 +41,7 @@ func (t AlertGroup) UpdateFields() []string {
 }
 
 type AlertPluginInstance struct {
-	TableModel
+	gobase.TableModel
 	Name       string `gorm:"not null;size:64"`
 	PluginName string `gorm:"not null;size:64"`
 	// serialized data for sodor.AlertPluginInstance.plugin
@@ -63,7 +57,7 @@ func (t AlertPluginInstance) UpdateFields() []string {
 }
 
 type AlertPluginInstanceHistory struct {
-	TableModel
+	gobase.TableModel
 	InstanceId int32  `gorm:"not null"`
 	GroupID    int32  `gorm:"not null"`
 	AlertMsg   string `gorm:"not null;size:512"`
@@ -71,7 +65,7 @@ type AlertPluginInstanceHistory struct {
 }
 
 type Job struct {
-	TableModel
+	gobase.TableModel
 	Name          string `gorm:"not null;size:64;unique"`
 	SchedulerMode string `gorm:"not null;default:''"`
 	RoutineSpec   string `gorm:"not null;default:'';size:128"` // {"ct_spec":"* * *"}
@@ -89,7 +83,7 @@ func (t Job) UpdateFields() []string {
 }
 
 type Task struct {
-	TableModel
+	gobase.TableModel
 	JobID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	Name         string `gorm:"not null;size:64;uniqueIndex:uniq_task"`
 	RunningHosts string `gorm:"not null;default:'';size:256"` // [{"tag":["a","b"]},{"hosts":["1.1.1.1"]}]
@@ -108,7 +102,7 @@ func (t Task) UpdateFields() []string {
 }
 
 type TaskRelation struct {
-	TableModel
+	gobase.TableModel
 	JobID      int32 `gorm:"not null"`
 	FromTaskID int32 `gorm:"not null"`
 	ToTaskID   int32 `gorm:"not null"`
@@ -116,13 +110,13 @@ type TaskRelation struct {
 
 // ScheduleState stores jobs with a crontab-scheduler
 type ScheduleState struct {
-	TableModel
+	gobase.TableModel
 	JobID int32  `gorm:"not null;uniqueIndex:uniq_job"`
 	Host  string `gorm:"not null;size:64;uniqueIndex:uniq_job"`
 }
 
 type JobInstance struct {
-	TableModel
+	gobase.TableModel
 	JobID      int32  `gorm:"not null"`
 	ScheduleTS int32  `gorm:"not null:default:0"`
 	StartTS    int32  `gorm:"not null;default:0"`
@@ -143,7 +137,7 @@ func (t JobInstance) UpdateFields() []string {
 }
 
 type TaskInstance struct {
-	TableModel
+	gobase.TableModel
 	JobID         int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	TaskID        int32  `gorm:"not null;uniqueIndex:uniq_task"`
 	JobInstanceID int32  `gorm:"not null;uniqueIndex:uniq_task"`
@@ -174,7 +168,7 @@ func (t TaskInstance) UpdateFields() []string {
 }
 
 type Thomas struct {
-	TableModel
+	gobase.TableModel
 	Name          string                 `gorm:"size:64;not null"`
 	Version       string                 `gorm:"size:64;not null"`
 	Proto         string                 `gorm:"size:16;not null"`
@@ -189,7 +183,7 @@ type Thomas struct {
 }
 
 type ThomasInstance struct {
-	TableModel
+	gobase.TableModel
 	ThomasID int32                  `gorm:"not null"`
 	Metrics  map[string]interface{} `gorm:"not null;serializer:json;default:'';type:mediumtext"` // json
 }
