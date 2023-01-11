@@ -9,7 +9,7 @@ import (
 
 func (ms *metaStore) JobExist(job *sodor.Job) (bool, error) {
 	type apiJob struct {
-		TableModel
+		gobase.TableModel
 	}
 
 	var j Job

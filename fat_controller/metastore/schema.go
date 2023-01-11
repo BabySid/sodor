@@ -171,6 +171,7 @@ type Thomas struct {
 	gobase.TableModel
 	Name          string                 `gorm:"size:64;not null"`
 	Version       string                 `gorm:"size:64;not null"`
+	Tags          []string               `gorm:"not null;serializer:json;default:'';type:text"` // json
 	Proto         string                 `gorm:"size:16;not null"`
 	Host          string                 `gorm:"size:32;not null;uniqueIndex:uniq_thomas"` // ip. e.g. 1.2.3.4
 	Port          int                    `gorm:"not null;uniqueIndex:uniq_thomas"`

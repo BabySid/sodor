@@ -76,7 +76,7 @@ func (ms *metaStore) ThomasExist(host string, port int32) (bool, error) {
 
 func (ms *metaStore) getThomasByHostPort(host string, port int32) (uint, error) {
 	type apiThomas struct {
-		TableModel
+		gobase.TableModel
 	}
 
 	var t Thomas
@@ -94,7 +94,7 @@ func (ms *metaStore) getThomasByHostPort(host string, port int32) (uint, error) 
 
 func (ms *metaStore) ThomasExistByID(id int32) (bool, error) {
 	type apiThomas struct {
-		TableModel
+		gobase.TableModel
 	}
 
 	var t Thomas
@@ -160,6 +160,19 @@ func (ms *metaStore) ShowThomas(in *sodor.ThomasInfo, out *sodor.ThomasInstance)
 		}
 		out.Metrics[i] = &metrics
 	}
+	return nil
+}
+
+func (ms *metaStore) UpdateThomasTags(thomas *sodor.ThomasInfo) error {
+	gobase.True(thomas.Id > 0)
+
+	var t Thomas
+	t.ID = uint(thomas.Id)
+
+	if rs := ms.db.Model(&t).Updates(Thomas{Tags: thomas.Tags}); rs.Error != nil {
+		return rs.Error
+	}
+
 	return nil
 }
 

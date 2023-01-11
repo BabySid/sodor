@@ -103,6 +103,7 @@ func fromThomas(in *Thomas, out *sodor.ThomasInfo) error {
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
 	out.Name = in.Name
 	out.Version = in.Version
+	out.Tags = in.Tags
 	out.Proto = in.Proto
 	out.Host = in.Host
 	out.Port = int32(in.Port)
@@ -138,6 +139,7 @@ func toThomas(in *sodor.ThomasInfo, out *Thomas) error {
 
 	out.Name = in.Name
 	out.Version = in.Version
+	out.Tags = in.Tags
 	out.Proto = in.Proto
 	out.Host = in.Host
 	out.Port = int(in.Port)
@@ -154,6 +156,7 @@ func toThomas(in *sodor.ThomasInfo, out *Thomas) error {
 func toSimpleThomas(in *sodor.ThomasInfo, out *Thomas) error {
 	out.Host = in.Host
 	out.Port = int(in.Port)
+	out.Tags = in.Tags
 	out.ThomasType = in.ThomasType.String()
 
 	return nil
