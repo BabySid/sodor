@@ -10,7 +10,7 @@ import (
 
 func (ms *metaStore) AlertPluginInstanceExist(ap *sodor.AlertPluginInstance) (bool, error) {
 	type apiAlertPlugin struct {
-		TableModel
+		gobase.TableModel
 	}
 
 	var a AlertPluginInstance
@@ -49,7 +49,7 @@ func (ms *metaStore) AlertPluginInstanceUsedInAlertGroup(ap *sodor.AlertPluginIn
 
 func (ms *metaStore) AlertGroupExist(ag *sodor.AlertGroup) (bool, error) {
 	type apiAlert struct {
-		TableModel
+		gobase.TableModel
 	}
 
 	var a AlertGroup
