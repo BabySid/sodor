@@ -10,7 +10,9 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound         = errors.New("not found")
+	ThomasStatusExpired = "Expired"
+	ThomasStatusOK      = "OK"
 )
 
 func toJob(in *sodor.Job, out *Job) error {
@@ -112,6 +114,13 @@ func fromThomas(in *Thomas, out *sodor.ThomasInfo) error {
 	out.HeartBeatTime = in.HeartBeatTime
 	out.ThomasType = sodor.ThomasType(sodor.ThomasType_value[in.ThomasType])
 	out.Status = in.Status
+	if out.Status == "" {
+		if int64(out.HeartBeatTime) >= time.Now().Unix()-maxThomasLife {
+			out.Status = ThomasStatusOK
+		} else {
+			out.Status = ThomasStatusExpired
+		}
+	}
 	metrics, err := structpb.NewStruct(in.Metrics)
 	if err != nil {
 		return err
