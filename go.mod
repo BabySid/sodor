@@ -1,6 +1,6 @@
 module sodor
 
-go 1.17
+go 1.19
 
 require (
 	github.com/BabySid/gobase v0.0.0-20230104101517-f5f41baef74e
