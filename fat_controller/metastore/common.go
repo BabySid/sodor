@@ -294,6 +294,8 @@ func toAlertGroup(in *sodor.AlertGroup, out *AlertGroup) error {
 
 func fromAlertPluginInstance(in *AlertPluginInstance, out *sodor.AlertPluginInstance) error {
 	out.Id = int32(in.ID)
+	out.CreateAt = int32(in.CreatedAt.Unix())
+	out.UpdateAt = int32(in.UpdatedAt.Unix())
 	out.Name = in.Name
 	out.PluginName = in.PluginName
 
