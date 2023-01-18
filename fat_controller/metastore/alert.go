@@ -35,7 +35,7 @@ func (ms *metaStore) AlertPluginInstanceExist(ap *sodor.AlertPluginInstance) (bo
 
 func (ms *metaStore) AlertPluginInstanceUsedInAlertGroup(ap *sodor.AlertPluginInstance) (bool, error) {
 	var ag AlertGroup
-	rs := ms.db.Where(fmt.Sprintf("json_contains(plugin_instance, '%d')", ap.Id)).Limit(1).Find(&ag)
+	rs := ms.db.Where(fmt.Sprintf("json_contains(plugin_instances, '%d')", ap.Id)).Limit(1).Find(&ag)
 	if rs.Error != nil {
 		return false, rs.Error
 	}

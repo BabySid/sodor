@@ -128,7 +128,7 @@ func checkAlertGroupValid(alert *sodor.AlertGroup, create bool) error {
 	}
 
 	if len(alert.PluginInstances) == 0 {
-		return fmt.Errorf("alert.plugin_instance is empty")
+		return fmt.Errorf("alert.plugin_instances is empty")
 	}
 
 	return nil
