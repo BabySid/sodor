@@ -266,8 +266,8 @@ func (ms *metaStore) ShowAlertGroup(group *sodor.AlertGroup) (*sodor.AlertGroup,
 		return nil, nil, err
 	}
 
-	pluginIns := make([]*sodor.AlertPluginInstance, len(ag.PluginInstance))
-	for i, v := range ag.PluginInstance {
+	pluginIns := make([]*sodor.AlertPluginInstance, len(ag.PluginInstances))
+	for i, v := range ag.PluginInstances {
 		pluginIns[i] = &sodor.AlertPluginInstance{Id: int32(v)}
 	}
 

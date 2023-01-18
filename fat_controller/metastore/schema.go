@@ -30,7 +30,7 @@ type AlertGroup struct {
 	gobase.TableModel
 	Name string `gorm:"not null;size:64;uniqueIndex:uniq_alert_group"`
 	// pluginName => properties
-	PluginInstance []uint `gorm:"not null;serializer:json;type:text;column:plugin_instance"`
+	PluginInstances []uint `gorm:"not null;serializer:json;type:text;column:plugin_instances"`
 }
 
 func (t AlertGroup) UpdateFields() []string {

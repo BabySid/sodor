@@ -284,9 +284,9 @@ func toAlertGroup(in *sodor.AlertGroup, out *AlertGroup) error {
 	}
 
 	out.Name = in.Name
-	out.PluginInstance = make([]uint, len(in.PluginInstance))
-	for i, v := range in.PluginInstance {
-		out.PluginInstance[i] = uint(v)
+	out.PluginInstances = make([]uint, len(in.PluginInstances))
+	for i, v := range in.PluginInstances {
+		out.PluginInstances[i] = uint(v)
 	}
 
 	return nil
@@ -317,9 +317,9 @@ func fromAlertGroup(in *AlertGroup, out *sodor.AlertGroup) error {
 	out.UpdateAt = int32(in.UpdatedAt.Unix())
 	out.Name = in.Name
 
-	out.PluginInstance = make([]int32, len(in.PluginInstance))
-	for i, v := range in.PluginInstance {
-		out.PluginInstance[i] = int32(v)
+	out.PluginInstances = make([]int32, len(in.PluginInstances))
+	for i, v := range in.PluginInstances {
+		out.PluginInstances[i] = int32(v)
 	}
 
 	return nil
