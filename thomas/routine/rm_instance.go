@@ -17,10 +17,13 @@ func (r removeTaskInstance) Run() {
 	now := time.Now()
 	root := config.GetInstance().DataPath
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		if d.IsDir() {
-			info, err := d.Info()
-			if err != nil {
-				return err
+			info, e := d.Info()
+			if e != nil {
+				return e
 			}
 			if now.Sub(info.ModTime()) > config.GetInstance().InstanceMaxAge {
 				dirs = append(dirs, path)
