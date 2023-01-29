@@ -130,46 +130,49 @@ func (ms *metaStore) SelectInstanceByJobInsID(job *sodor.JobInstance, tasks *sod
 	return nil
 }
 
-func (ms *metaStore) SelectInstanceByJobID(jobID int32) (*sodor.JobTaskInstances, error) {
-	var jobIns []*JobInstance
-	rs := ms.db.Model(&JobInstance{}).Where(&JobInstance{JobID: jobID}).Find(&jobIns)
-	if rs.Error != nil {
-		return nil, rs.Error
-	}
-
+func (ms *metaStore) SelectTaskInstance(jobID int32, jobInsID int32) (*sodor.TaskInstances, error) {
 	var taskIns []*TaskInstance
-	rs = ms.db.Model(&TaskInstance{}).Where(&TaskInstance{JobID: jobID}).Find(&taskIns)
+	rs := ms.db.Model(&TaskInstance{}).Where(&TaskInstance{JobID: jobID, JobInstanceID: jobInsID}).Find(&taskIns)
 	if rs.Error != nil {
 		return nil, rs.Error
 	}
 
-	var jtIns sodor.JobTaskInstances
-	jtIns.JobInstances = &sodor.JobInstances{}
-	jtIns.JobInstances.JobInstances = make([]*sodor.JobInstance, 0)
-	jtIns.TaskInstances = &sodor.TaskInstances{}
-	jtIns.TaskInstances.TaskInstances = make([]*sodor.TaskInstance, 0)
-
-	for _, ins := range jobIns {
-		var target sodor.JobInstance
-		err := fromJobInstance(ins, &target)
-		if err != nil {
-			return nil, err
-		}
-
-		jtIns.JobInstances.JobInstances = append(jtIns.JobInstances.JobInstances, &target)
-	}
-
-	for _, ins := range taskIns {
+	var instance sodor.TaskInstances
+	instance.TaskInstances = make([]*sodor.TaskInstance, len(taskIns))
+	for i, ins := range taskIns {
 		var target sodor.TaskInstance
 		err := fromTaskInstance(ins, &target)
 		if err != nil {
 			return nil, err
 		}
 
-		jtIns.TaskInstances.TaskInstances = append(jtIns.TaskInstances.TaskInstances, &target)
+		instance.TaskInstances[i] = &target
 	}
 
-	return &jtIns, nil
+	return &instance, nil
+}
+
+func (ms *metaStore) SelectJobInstance(jobID int32) (*sodor.JobInstances, error) {
+	var jobIns []*JobInstance
+	rs := ms.db.Model(&JobInstance{}).Where(&JobInstance{JobID: jobID}).Find(&jobIns)
+	if rs.Error != nil {
+		return nil, rs.Error
+	}
+
+	var instance sodor.JobInstances
+	instance.JobInstances = make([]*sodor.JobInstance, len(jobIns))
+
+	for i, ins := range jobIns {
+		var target sodor.JobInstance
+		err := fromJobInstance(ins, &target)
+		if err != nil {
+			return nil, err
+		}
+
+		instance.JobInstances[i] = &target
+	}
+
+	return &instance, nil
 }
 
 func (ms *metaStore) SelectLastTaskInstance(taskID int32) (*sodor.TaskInstance, error) {
