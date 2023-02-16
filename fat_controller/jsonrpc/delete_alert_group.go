@@ -2,36 +2,36 @@ package jsonrpc
 
 import (
 	"errors"
-	"github.com/BabySid/gorpc/http/httpapi"
+	"github.com/BabySid/gorpc/api"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/alert"
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) DeleteAlertGroup(ctx *httpapi.APIContext, params *sodor.AlertGroup) (*sodor.AlertGroupReply, *httpapi.JsonRpcError) {
+func (s *Service) DeleteAlertGroup(ctx api.Context, params *sodor.AlertGroup) (*sodor.AlertGroupReply, *api.JsonRpcError) {
 	if params.Id == 0 {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("invalid params of alert_group"))
+		return nil, api.NewJsonRpcErrFromCode(api.InvalidParams, errors.New("invalid params of alert_group"))
 	}
 
 	exist, err := metastore.GetInstance().AlertGroupExist(params)
 	if err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
 
 	if !exist {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("alert_group not exist"))
+		return nil, api.NewJsonRpcErrFromCode(api.InvalidParams, errors.New("alert_group not exist"))
 	}
 
 	if err = metastore.GetInstance().DeleteAlertGroup(params); err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
 
 	if params.Id == alert.GetInstance().AlertGroupID() {
 		if err = alert.GetInstance().ResetAlertGroupID(); err != nil {
-			return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+			return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 		}
 	}
 
-	ctx.ToLog("DeleteAlertGroup Done: %+v", params)
+	ctx.Log("DeleteAlertGroup Done: %+v", params)
 	return &sodor.AlertGroupReply{Id: params.Id}, nil
 }

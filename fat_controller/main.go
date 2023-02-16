@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/BabySid/gobase"
 	"github.com/BabySid/gorpc"
-	"github.com/BabySid/gorpc/http/httpcfg"
-	logOption "github.com/BabySid/gorpc/log"
+	"github.com/BabySid/gorpc/api"
+	"github.com/BabySid/gorpc/codec"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -78,20 +78,20 @@ func NewApp() *cli.App {
 }
 
 func runApp(ctx *cli.Context) error {
-	var rotator *logOption.Rotator
+	var rotator *api.Rotator
 	if !ctx.Bool(config.DebugMode.Name) {
-		rotator = &logOption.Rotator{
+		rotator = &api.Rotator{
 			LogMaxAge: ctx.Int(config.LogMaxAge.Name),
 			LogPath:   ctx.String(config.LogPath.Name),
 		}
 	}
 
-	server = gorpc.NewServer(gorpc.ServerOption{
+	server = gorpc.NewServer(api.ServerOption{
 		Addr:        ctx.String(config.ListenAddr.Name),
 		ClusterName: "fat_ctrl",
 		Rotator:     rotator,
 		LogLevel:    ctx.String(config.LogLevel.Name),
-		HttpOpt:     httpcfg.ServerOption{Codec: httpcfg.ProtobufCodec},
+		Codec:       codec.ProtobufCodec,
 		BeforeRun: func() error {
 			return initComponent(ctx)
 		},

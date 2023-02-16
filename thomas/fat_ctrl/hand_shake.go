@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sodor/thomas/config"
@@ -11,15 +12,15 @@ import (
 )
 
 func (fc *FatCtrl) HandShake() {
-	conn, err := fc.getFatCtrlConn()
+	rpcCli, err := fc.getFatCtrlConn()
 	if err != nil {
 		log.Warnf("getFatCtrlConn failed. err=%s", err)
 		return
 	}
 
-	defer conn.Close()
+	defer rpcCli.Close()
 
-	cli := sodor.NewFatControllerClient(conn)
+	cli := sodor.NewFatControllerClient(rpcCli.UnderlyingHandle().(*grpc.ClientConn))
 
 	req, err := util.BuildThomasInfo()
 	if err != nil {

@@ -2,28 +2,28 @@ package jsonrpc
 
 import (
 	"errors"
-	"github.com/BabySid/gorpc/http/httpapi"
+	"github.com/BabySid/gorpc/api"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) UpdateThomas(ctx *httpapi.APIContext, params *sodor.ThomasInfo) (*sodor.ThomasReply, *httpapi.JsonRpcError) {
+func (s *Service) UpdateThomas(ctx api.Context, params *sodor.ThomasInfo) (*sodor.ThomasReply, *api.JsonRpcError) {
 	if params.Id == 0 {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("invalid params of thomas"))
+		return nil, api.NewJsonRpcErrFromCode(api.InvalidParams, errors.New("invalid params of thomas"))
 	}
 
 	exist, err := metastore.GetInstance().ThomasExistByID(params.Id)
 	if err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
 
 	if !exist {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("thomas not exist"))
+		return nil, api.NewJsonRpcErrFromCode(api.InvalidParams, errors.New("thomas not exist"))
 	}
 
 	if err = metastore.GetInstance().UpdateThomasTags(params); err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
-	ctx.ToLog("UpdateThomas Done: %+v", params)
+	ctx.Log("UpdateThomas Done: %+v", params)
 	return &sodor.ThomasReply{Id: params.Id}, nil
 }

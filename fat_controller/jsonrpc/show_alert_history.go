@@ -2,23 +2,23 @@ package jsonrpc
 
 import (
 	"errors"
-	"github.com/BabySid/gorpc/http/httpapi"
+	"github.com/BabySid/gorpc/api"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/metastore"
 )
 
 func (s *Service) ShowAlertPluginInstanceHistories(
-	ctx *httpapi.APIContext,
-	params *sodor.AlertPluginInstanceHistory) (*sodor.AlertPluginInstanceHistories, *httpapi.JsonRpcError) {
+	ctx api.Context,
+	params *sodor.AlertPluginInstanceHistory) (*sodor.AlertPluginInstanceHistories, *api.JsonRpcError) {
 	if params.GroupId == 0 && params.InstanceId == 0 {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("invalid params of alert_plugin_instance_history"))
+		return nil, api.NewJsonRpcErrFromCode(api.InvalidParams, errors.New("invalid params of alert_plugin_instance_history"))
 	}
 
 	rs, err := metastore.GetInstance().ShowAlertPluginInstanceHistories(params)
 	if err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
 
-	ctx.ToLog("ShowAlertPluginInstanceHistories Done: %d", len(rs.AlertPluginInstanceHistory))
+	ctx.Log("ShowAlertPluginInstanceHistories Done: %d", len(rs.AlertPluginInstanceHistory))
 	return rs, nil
 }

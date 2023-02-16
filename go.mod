@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/BabySid/gobase v0.0.0-20230104101517-f5f41baef74e
-	github.com/BabySid/gorpc v0.0.0-20230203115000-71beacc07473
+	github.com/BabySid/gorpc v0.0.0-20230216031523-784807ced90f
 	github.com/BabySid/proto v0.0.0-20230118104448-31546252cdba
 	github.com/go-cmd/cmd v1.4.0
 	github.com/robfig/cron/v3 v3.0.1
@@ -34,6 +34,7 @@ require (
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

@@ -4,19 +4,20 @@ import (
 	"context"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
 
 func (fc *FatCtrl) UpdateTaskInstance(ins *sodor.TaskInstance) error {
-	conn, err := fc.getFatCtrlConn()
+	rpcCli, err := fc.getFatCtrlConn()
 	if err != nil {
 		log.Warnf("getFatCtrlConn failed. err=%s", err)
 		return err
 	}
 
-	defer conn.Close()
+	defer rpcCli.Close()
 
-	cli := sodor.NewFatControllerClient(conn)
+	cli := sodor.NewFatControllerClient(rpcCli.UnderlyingHandle().(*grpc.ClientConn))
 	_, err = cli.UpdateTaskInstance(context.Background(), ins)
 
 	if s, ok := status.FromError(err); ok {

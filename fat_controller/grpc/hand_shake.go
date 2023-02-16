@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"github.com/BabySid/gorpc/grpc"
+	u "github.com/BabySid/gorpc/util"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Service) HandShake(ctx context.Context, req *sodor.ThomasInfo) (*sodor.FatCtrlInfos, error) {
-	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
+	ip, _ := u.GetPeerIPFromGRPC(ctx)
 	log.Infof("HandShake from %s req.Id=%d", ip, req.Id)
 
 	if req.Id == 0 {

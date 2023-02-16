@@ -3,10 +3,11 @@ package thomas
 import (
 	"context"
 	"errors"
+	"github.com/BabySid/gorpc"
+	"github.com/BabySid/gorpc/api"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"sodor/fat_controller/util"
 	"strconv"
@@ -18,13 +19,13 @@ type Thomas struct {
 }
 
 func (t *Thomas) HandShake(id int32) (*sodor.ThomasInfo, error) {
-	conn, err := t.dial()
+	rpcCli, err := t.dial()
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer rpcCli.Close()
 
-	cli := sodor.NewThomasClient(conn)
+	cli := sodor.NewThomasClient(rpcCli.UnderlyingHandle().(*grpc.ClientConn))
 
 	var req sodor.HandShakeWithThomasRequest
 	req.Thomas = &sodor.ThomasInfo{Id: id}
@@ -42,13 +43,13 @@ func (t *Thomas) HandShake(id int32) (*sodor.ThomasInfo, error) {
 }
 
 func (t *Thomas) RunTask(task *sodor.Task, ins *sodor.TaskInstance) error {
-	conn, err := t.dial()
+	rpcCli, err := t.dial()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer rpcCli.Close()
 
-	cli := sodor.NewThomasClient(conn)
+	cli := sodor.NewThomasClient(rpcCli.UnderlyingHandle().(*grpc.ClientConn))
 	var req sodor.RunTaskRequest
 	req.Task = task
 	req.TaskInstance = ins
@@ -64,13 +65,12 @@ func (t *Thomas) RunTask(task *sodor.Task, ins *sodor.TaskInstance) error {
 	return err
 }
 
-func (t *Thomas) dial() (*grpc.ClientConn, error) {
-	host := t.Host + ":" + strconv.Itoa(t.Port)
-	conn, err := grpc.Dial(host, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (t *Thomas) dial() (api.Client, error) {
+	url := "grpc://" + t.Host + ":" + strconv.Itoa(t.Port)
+	cli, err := gorpc.Dial(url, api.ClientOption{})
 	if err != nil {
-		log.Warnf("Dial host=%s failed. err=%s", host, err)
-		return nil, err
+		log.Warnf("Dial host=%s failed. err=%s", url, err)
 	}
 
-	return conn, nil
+	return cli, nil
 }

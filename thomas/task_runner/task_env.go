@@ -3,7 +3,7 @@ package task_runner
 import (
 	"fmt"
 	"github.com/BabySid/gobase"
-	"github.com/BabySid/gorpc/http/codec"
+	"github.com/BabySid/gorpc/codec"
 	"github.com/BabySid/proto/sodor"
 	"github.com/go-cmd/cmd"
 	log "github.com/sirupsen/logrus"

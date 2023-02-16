@@ -2,23 +2,23 @@ package jsonrpc
 
 import (
 	"errors"
-	"github.com/BabySid/gorpc/http/httpapi"
+	"github.com/BabySid/gorpc/api"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.Job, *httpapi.JsonRpcError) {
+func (s *Service) SelectJob(ctx api.Context, params *sodor.Job) (*sodor.Job, *api.JsonRpcError) {
 	if params.Id == 0 {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("job.id must be set"))
+		return nil, api.NewJsonRpcErrFromCode(api.InvalidParams, errors.New("job.id must be set"))
 	}
 
 	exist, err := metastore.GetInstance().JobExist(params)
 	if err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
 
 	if !exist {
-		return nil, httpapi.NewJRpcErr(httpapi.InvalidParams, errors.New("job not exist"))
+		return nil, api.NewJsonRpcErrFromCode(api.InvalidParams, errors.New("job not exist"))
 	}
 
 	var job sodor.Job
@@ -26,9 +26,9 @@ func (s *Service) SelectJob(ctx *httpapi.APIContext, params *sodor.Job) (*sodor.
 
 	err = metastore.GetInstance().SelectJob(&job)
 	if err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
 
-	ctx.ToLog("SelectJob Done: %+v", params)
+	ctx.Log("SelectJob Done: %+v", params)
 	return &job, nil
 }

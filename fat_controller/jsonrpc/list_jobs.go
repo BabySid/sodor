@@ -1,16 +1,16 @@
 package jsonrpc
 
 import (
-	"github.com/BabySid/gorpc/http/httpapi"
+	"github.com/BabySid/gorpc/api"
 	"github.com/BabySid/proto/sodor"
 	"sodor/fat_controller/metastore"
 )
 
-func (s *Service) ListJobs(ctx *httpapi.APIContext, _ *interface{}) (*sodor.Jobs, *httpapi.JsonRpcError) {
+func (s *Service) ListJobs(ctx api.Context, _ *interface{}) (*sodor.Jobs, *api.JsonRpcError) {
 	jobs, err := metastore.GetInstance().ListJobs()
 	if err != nil {
-		return nil, httpapi.NewJRpcErr(httpapi.InternalError, err)
+		return nil, api.NewJsonRpcErrFromCode(api.InternalError, err)
 	}
-	ctx.ToLog("ListJobs Done: %d", len(jobs.GetJobs()))
+	ctx.Log("ListJobs Done: %d", len(jobs.GetJobs()))
 	return jobs, nil
 }

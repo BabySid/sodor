@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"github.com/BabySid/gorpc/grpc"
+	"github.com/BabySid/gorpc/util"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -14,7 +14,7 @@ import (
 )
 
 func (s *Service) RunTask(ctx context.Context, task *sodor.RunTaskRequest) (*sodor.EmptyResponse, error) {
-	ip, _ := grpc.GetPeerIPFromGRPC(ctx)
+	ip, _ := util.GetPeerIPFromGRPC(ctx)
 	log.Infof("RunTask from %s. task.id=%d task.insId=%d", ip, task.Task.Id, task.TaskInstance.Id)
 
 	c, err := task_runner.GetTaskEnv().SetUp(task)

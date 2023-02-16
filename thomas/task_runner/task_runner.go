@@ -2,7 +2,7 @@ package task_runner
 
 import (
 	"github.com/BabySid/gobase"
-	"github.com/BabySid/gorpc/http/codec"
+	"github.com/BabySid/gorpc/codec"
 	"github.com/BabySid/proto/sodor"
 	"io/ioutil"
 	"os"

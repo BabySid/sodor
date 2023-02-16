@@ -2,10 +2,10 @@ package fat_ctrl
 
 import (
 	"errors"
+	"github.com/BabySid/gorpc"
+	"github.com/BabySid/gorpc/api"
 	"github.com/BabySid/proto/sodor"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"sodor/thomas/config"
 	"strconv"
 	"sync"
@@ -41,7 +41,7 @@ func (fc *FatCtrl) Run() {
 	fc.HandShake()
 }
 
-func (fc *FatCtrl) getFatCtrlConn() (*grpc.ClientConn, error) {
+func (fc *FatCtrl) getFatCtrlConn() (api.Client, error) {
 	fc.mux.Lock()
 	defer fc.mux.Unlock()
 
@@ -55,8 +55,8 @@ func (fc *FatCtrl) getFatCtrlConn() (*grpc.ClientConn, error) {
 
 	initIdx := fc.fatCtrlIdx
 	for {
-		h := fc.fatCtrlHosts[fc.fatCtrlIdx].IP + ":" + strconv.Itoa(fc.fatCtrlHosts[fc.fatCtrlIdx].port)
-		conn, err := grpc.Dial(h, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		h := "grpc://" + fc.fatCtrlHosts[fc.fatCtrlIdx].IP + ":" + strconv.Itoa(fc.fatCtrlHosts[fc.fatCtrlIdx].port)
+		conn, err := gorpc.Dial(h, api.ClientOption{})
 		fc.fatCtrlIdx = (fc.fatCtrlIdx + 1) % len(fc.fatCtrlHosts)
 		if err == nil {
 			return conn, nil
