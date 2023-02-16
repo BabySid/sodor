@@ -3,7 +3,7 @@ package metastore
 import (
 	"errors"
 	"github.com/BabySid/gobase"
-	"github.com/BabySid/gorpc/http/codec"
+	"github.com/BabySid/gorpc/codec"
 	"github.com/BabySid/proto/sodor"
 	"google.golang.org/protobuf/types/known/structpb"
 	"time"
