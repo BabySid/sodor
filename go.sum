@@ -51,6 +51,8 @@ github.com/BabySid/gorpc v0.0.0-20230216031523-784807ced90f h1:i1cgLdfV8rGgZheDV
 github.com/BabySid/gorpc v0.0.0-20230216031523-784807ced90f/go.mod h1:FqO3cj7nqcQo+wly/m/kGI518OoKfmMhYvp84v8lPbU=
 github.com/BabySid/gorpc v0.0.0-20230308110511-696fc13b69d7 h1:+CHhaa1pCxGlq2vaC/v69CQJtAXrWsqurNUNhK4XJWo=
 github.com/BabySid/gorpc v0.0.0-20230308110511-696fc13b69d7/go.mod h1:FqO3cj7nqcQo+wly/m/kGI518OoKfmMhYvp84v8lPbU=
+github.com/BabySid/gorpc v0.0.0-20230308110837-64dffb8a3d42 h1:YYq9AV02fqpw5vrRVbDTnxWQYomZvTfRycReXjNLrqw=
+github.com/BabySid/gorpc v0.0.0-20230308110837-64dffb8a3d42/go.mod h1:FqO3cj7nqcQo+wly/m/kGI518OoKfmMhYvp84v8lPbU=
 github.com/BabySid/proto v0.0.0-20230118104448-31546252cdba h1:GZLiu/2K0xPn6iANfcYCsxUsg7nUPWTO/4z/kae1l3U=
 github.com/BabySid/proto v0.0.0-20230118104448-31546252cdba/go.mod h1:cSJ+d6Znm3Ju/WlMxETsHcCLawedmjDo89ZR9J1lLdE=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
